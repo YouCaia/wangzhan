@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="lightbox.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -2244,6 +2245,12 @@
       function mediaSrc(folder, file) {
         return encodeURI('images/' + folder + file);
       }
+      function folderName(folder) {
+        return folder.replace(/\/$/, '').split('/').pop();
+      }
+      function isVideoFile(file) {
+        return /\.(mp4|webm|mov|m4v|ogg)$/i.test(file);
+      }
       const workData = {
         'work1': {
           title: '美白霜M主图设计',
@@ -2410,7 +2417,7 @@
         return files.filter((f, i) => ok[i]);
       }
 
-      // 构建主图画廊（1:1 主图 + 缩略图 + 箭头切换）
+      // 构建主图画廊（1:1 主图 + 缩略图 + 箭头切换 + 滑动切换 + 点击放大）
       function buildGallery(data) {
         const gallery = document.createElement('div');
         gallery.className = 'wd-gallery';
@@ -2429,16 +2436,40 @@
         gallery.appendChild(label);
 
         let currentIndex = 0;
+        let recentSwipe = false;
 
         const mainWrap = document.createElement('div');
         mainWrap.className = 'wd-main-image-wrap';
+        mainWrap.style.cssText = 'position:relative;width:100%;overflow:hidden;aspect-ratio:1/1;touch-action:pan-y;';
         gallery.appendChild(mainWrap);
+
+        const track = document.createElement('div');
+        track.className = 'wd-main-track';
+        track.style.cssText = 'display:flex;height:100%;width:' + (data.mainImages.length * 100) + '%;transition:transform 0.35s cubic-bezier(0.25,1,0.5,1);will-change:transform;';
+        mainWrap.appendChild(track);
+
+        data.mainImages.forEach((src, i) => {
+          const slide = document.createElement('div');
+          slide.style.cssText = 'flex:0 0 ' + (100 / data.mainImages.length) + '%;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+          const media = createMedia(src, data.title + ' - 主图 ' + (i + 1));
+          media.style.cssText = 'width:100%;height:100%;object-fit:contain;cursor:zoom-in;user-select:none;-webkit-user-drag:none;';
+          if (media.tagName === 'IMG') {
+            media.addEventListener('click', () => {
+              if (recentSwipe) return;
+              const idx = data.mainImageUrls.indexOf(src);
+              if (idx >= 0 && data.lightboxUrls) openLightbox(data.lightboxUrls, idx);
+            });
+          }
+          slide.appendChild(media);
+          track.appendChild(slide);
+        });
 
         const counter = document.createElement('div');
         counter.className = 'wd-gallery-counter';
         counter.id = 'wd-gallery-counter';
+        counter.style.cssText = 'position:absolute;bottom:12px;right:16px;background:rgba(0,0,0,0.5);color:#fff;padding:4px 10px;border-radius:20px;font-size:12px;';
         counter.textContent = '1 / ' + data.mainImages.length;
-        gallery.appendChild(counter);
+        mainWrap.appendChild(counter);
 
         const nav = document.createElement('div');
         nav.className = 'wd-gallery-nav';
@@ -2471,17 +2502,45 @@
 
         gallery.appendChild(nav);
 
-        function setImage(index) {
+        function setImage(index, animate) {
           const len = data.mainImages.length;
           currentIndex = (index + len) % len;
-          mainWrap.innerHTML = '';
-          const m = createMedia(data.mainImages[currentIndex], data.title + ' - 主图');
-          m.id = 'wd-main-img';
-          m.style.objectFit = 'contain';
-          mainWrap.appendChild(m);
+          track.style.transition = animate !== false ? 'transform 0.35s cubic-bezier(0.25,1,0.5,1)' : 'none';
+          track.style.transform = 'translateX(-' + (currentIndex * (100 / len)) + '%)';
           counter.textContent = (currentIndex + 1) + ' / ' + len;
           thumbs.forEach((t, i) => t.classList.toggle('active', i === currentIndex));
         }
+
+        // touch swipe
+        let touchStartX = 0, currentX = 0, isSwiping = false;
+        mainWrap.addEventListener('touchstart', (e) => {
+          isSwiping = true;
+          touchStartX = e.touches[0].clientX;
+          currentX = touchStartX;
+          track.style.transition = 'none';
+        }, { passive: true });
+        mainWrap.addEventListener('touchmove', (e) => {
+          if (!isSwiping) return;
+          currentX = e.touches[0].clientX;
+          const delta = currentX - touchStartX;
+          const base = -(currentIndex * (100 / data.mainImages.length));
+          const pct = base + (delta / mainWrap.clientWidth) * (100 / data.mainImages.length);
+          track.style.transform = 'translateX(' + pct + '%)';
+        }, { passive: true });
+        mainWrap.addEventListener('touchend', (e) => {
+          if (!isSwiping) return;
+          isSwiping = false;
+          const delta = currentX - touchStartX;
+          const threshold = mainWrap.clientWidth * 0.2;
+          if (Math.abs(delta) > 20) {
+            recentSwipe = true;
+            setTimeout(() => { recentSwipe = false; }, 60);
+          }
+          if (delta < -threshold && currentIndex < data.mainImages.length - 1) setImage(currentIndex + 1);
+          else if (delta > threshold && currentIndex > 0) setImage(currentIndex - 1);
+          else setImage(currentIndex);
+        }, { passive: true });
+
         setImage(0);
 
         return gallery;
@@ -2518,7 +2577,15 @@
         data.aplus.images.forEach((item, i) => {
           const div = document.createElement('div');
           div.className = 'wd-aplus-item' + (gap === 'gapped' ? ' gap-rounded' : '') + ' wd-aplus-size-' + item.width;
-          div.appendChild(createMedia(item.src, data.title + ' - A+内容 ' + (i + 1)));
+          const media = createMedia(item.src, data.title + ' - A+内容 ' + (i + 1));
+          if (media.tagName === 'IMG') {
+            media.style.cursor = 'zoom-in';
+            media.addEventListener('click', () => {
+              const idx = data.aplusImageUrls.indexOf(item.src);
+              if (idx >= 0 && data.lightboxUrls) openLightbox(data.lightboxUrls, data.mainImageUrls.length + idx);
+            });
+          }
+          div.appendChild(media);
           grid.appendChild(div);
         });
 
@@ -2532,11 +2599,17 @@
         const mainImages = mainFiles.map(f => mediaSrc(d.folder, f));
         const aplusOk = await Promise.all((d.aplus.images || []).map(a => mediaExists(mediaSrc(d.folder, a.file))));
         const aplusImages = (d.aplus.images || []).filter((a, i) => aplusOk[i]).map(a => ({ src: mediaSrc(d.folder, a.file), width: a.width, height: a.height }));
+        const mainImageUrls = mainImages.filter(src => !isVideoFile(src.split('/').pop()));
+        const aplusImageUrls = aplusImages.filter(item => !isVideoFile(item.src.split('/').pop())).map(item => item.src);
+        const lightboxUrls = mainImageUrls.concat(aplusImageUrls);
         const detailData = {
-          title: d.title,
+          title: folderName(d.folder),
           category: d.category,
           desc: d.desc,
           mainImages: mainImages,
+          mainImageUrls: mainImageUrls,
+          aplusImageUrls: aplusImageUrls,
+          lightboxUrls: lightboxUrls,
           aplus: {
             gap: d.aplus.gap,
             images: aplusImages

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>作品集 — YOUCAI 亚马逊电商设计师</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="lightbox.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -624,6 +625,16 @@
       return encodeURI('images/' + folder + file);
     }
 
+    // 从 folder 路径提取作品名（如 "美妆/美白霜M/" -> "美白霜M"）
+    function folderName(folder) {
+      return folder.replace(/\/$/, '').split('/').pop();
+    }
+
+    // 判断文件是否为视频
+    function isVideoFile(file) {
+      return /\.(mp4|webm|mov|m4v|ogg)$/i.test(file);
+    }
+
     // 探测媒体文件是否真实存在（缺失即不显示，不裂图、不占位）
     function mediaExists(src) {
       return new Promise((resolve) => {
@@ -695,7 +706,7 @@
 
         const info = document.createElement('div');
         info.className = 'work-card-info';
-        info.innerHTML = '<h3>' + work.title + '</h3><p>' + work.tags + '</p>';
+        info.innerHTML = '<h3>' + folderName(work.folder) + '</h3><p>亚马逊电商视觉 · 主图设计 · A+ 详情页</p>';
         card.appendChild(info);
 
         card.addEventListener('click', () => openDetail(realIndex));
@@ -727,7 +738,7 @@
       const work = works[currentDetailIndex];
       if (!work) return;
 
-      detailTitle.textContent = work.title + ' — ' + work.category;
+      detailTitle.textContent = folderName(work.folder) + ' — ' + work.category;
 
       // 更新上一个/下一个按钮状态
       document.getElementById('detail-prev').disabled = currentDetailIndex <= 0;
@@ -762,23 +773,45 @@
       const galleryThumbs = document.getElementById('gallery-thumbs');
       let currentImg = 0;
       const mainMedia = await filterExisting(work.folder, work.main || []);
+      const mainImageFiles = mainMedia.filter(f => !isVideoFile(f));
+      const aplusImageFiles = aplusList.filter(a => !isVideoFile(a.file));
+      const lightboxUrls = mainImageFiles.map(f => mediaSrc(work.folder, f))
+        .concat(aplusImageFiles.map(a => mediaSrc(work.folder, a.file)));
 
-      // 渲染主图
-      function showMain(idx) {
-        currentImg = idx;
-        galleryMain.innerHTML = '';
-        const media = createMedia(mediaSrc(work.folder, mainMedia[idx]), work.title + ' 主图 ' + (idx + 1), '放媒体: ' + mainMedia[idx], { objectFit: 'contain' });
-        galleryMain.appendChild(media);
+      // 主图轨道（支持滑动切换 + 点击放大）
+      galleryMain.innerHTML = '';
+      galleryMain.style.cssText = 'position:relative; width:100%; overflow:hidden; aspect-ratio:1/1;';
+      let track, counter;
+      let recentSwipe = false;
 
-        const counter = document.createElement('div');
-        counter.className = 'gallery-counter';
-        counter.textContent = (idx + 1) + ' / ' + mainMedia.length;
-        galleryMain.appendChild(counter);
-
-        // 更新缩略图选中态
-        galleryThumbs.querySelectorAll('.gallery-thumb').forEach((t, i) => {
-          t.classList.toggle('active', i === idx);
+      if (mainMedia.length === 0) {
+        galleryMain.innerHTML = '<div class="empty-media" style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.4);">暂无主图</div>';
+      } else {
+        track = document.createElement('div');
+        track.className = 'gallery-track';
+        track.style.cssText = 'display:flex;height:100%;width:' + (mainMedia.length * 100) + '%;transition:transform 0.35s cubic-bezier(0.25,1,0.5,1);will-change:transform;';
+        mainMedia.forEach((f, i) => {
+          const slide = document.createElement('div');
+          slide.style.cssText = 'flex:0 0 ' + (100 / mainMedia.length) + '%;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+          const media = createMedia(mediaSrc(work.folder, f), folderName(work.folder) + ' 主图 ' + (i + 1), '放媒体: ' + f);
+          media.style.cssText = 'width:100%;height:100%;object-fit:contain;cursor:zoom-in;user-select:none;-webkit-user-drag:none;';
+          if (media.tagName === 'IMG') {
+            media.addEventListener('click', () => {
+              if (recentSwipe) return;
+              const idx = mainImageFiles.indexOf(f);
+              if (idx >= 0) openLightbox(lightboxUrls, idx);
+            });
+          }
+          slide.appendChild(media);
+          track.appendChild(slide);
         });
+        galleryMain.appendChild(track);
+
+        counter = document.createElement('div');
+        counter.className = 'gallery-counter';
+        counter.style.cssText = 'position:absolute;bottom:12px;right:16px;background:rgba(0,0,0,0.5);color:#fff;padding:4px 10px;border-radius:20px;font-size:12px;';
+        counter.textContent = '1 / ' + mainMedia.length;
+        galleryMain.appendChild(counter);
       }
 
       // 渲染缩略图
@@ -791,17 +824,66 @@
         galleryThumbs.appendChild(thumb);
       });
 
-      if (mainMedia.length === 0) {
-        galleryMain.innerHTML = '<div class="empty-media">暂无主图</div>';
-      } else {
+      function showMain(idx, animate) {
+        if (!track) return;
+        currentImg = idx;
+        track.style.transition = animate !== false ? 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
+        track.style.transform = 'translateX(-' + (idx * (100 / mainMedia.length)) + '%)';
+        if (counter) counter.textContent = (idx + 1) + ' / ' + mainMedia.length;
+        galleryThumbs.querySelectorAll('.gallery-thumb').forEach((t, i) => {
+          t.classList.toggle('active', i === idx);
+        });
+      }
+
+      // 滑动切换
+      let touchStartX = 0, currentX = 0, isSwiping = false;
+      if (galleryMain && mainMedia.length > 1) {
+        galleryMain.addEventListener('touchstart', (e) => {
+          isSwiping = true;
+          touchStartX = e.touches[0].clientX;
+          currentX = touchStartX;
+          if (track) track.style.transition = 'none';
+        }, { passive: true });
+        galleryMain.addEventListener('touchmove', (e) => {
+          if (!isSwiping) return;
+          currentX = e.touches[0].clientX;
+          if (!track) return;
+          const delta = currentX - touchStartX;
+          const base = -(currentImg * (100 / mainMedia.length));
+          const pct = base + (delta / galleryMain.clientWidth) * (100 / mainMedia.length);
+          track.style.transform = 'translateX(' + pct + '%)';
+        }, { passive: true });
+        galleryMain.addEventListener('touchend', (e) => {
+          if (!isSwiping) return;
+          isSwiping = false;
+          const delta = currentX - touchStartX;
+          const threshold = galleryMain.clientWidth * 0.2;
+          if (Math.abs(delta) > 20) {
+            recentSwipe = true;
+            setTimeout(() => { recentSwipe = false; }, 60);
+          }
+          if (delta < -threshold && currentImg < mainMedia.length - 1) showMain(currentImg + 1);
+          else if (delta > threshold && currentImg > 0) showMain(currentImg - 1);
+          else showMain(currentImg);
+        }, { passive: true });
+      }
+
+      if (mainMedia.length > 0) {
         showMain(0);
       }
 
-      // 填充 A+ 图片 / 视频
+      // 填充 A+ 图片 / 视频（点击图片进 lightbox）
       aplusList.forEach((a, i) => {
         const container = document.getElementById('aplus-' + i);
         if (container) {
-          const media = createMedia(mediaSrc(work.folder, a.file), work.title + ' A+ ' + (i + 1), '放A+文件: ' + a.file);
+          const media = createMedia(mediaSrc(work.folder, a.file), folderName(work.folder) + ' A+ ' + (i + 1), '放A+文件: ' + a.file);
+          if (media.tagName === 'IMG') {
+            media.style.cursor = 'zoom-in';
+            media.addEventListener('click', () => {
+              const idx = mainImageFiles.length + aplusImageFiles.indexOf(a);
+              openLightbox(lightboxUrls, idx);
+            });
+          }
           container.appendChild(media);
         }
       });
