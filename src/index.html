@@ -1,0 +1,2518 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOUCAI · 亚马逊电商设计师</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg:       '#0a0a0a',
+            'bg-soft':'#141414',
+            gold:     '#d4a857',
+            'gold-light': '#f0d089',
+            'gold-dim':  '#a8823a',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+          },
+        }
+      }
+    };
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    img, video { max-width: 100%; height: auto; display: block; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #0a0a0a;
+      color: #f5f5f5;
+      font-family: 'Inter', -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      margin: 0;
+    }
+
+    /* ========== Bokeh orbs background ========== */
+    .bokeh-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .bokeh-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      will-change: transform;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #e8b864 0%, #c98a3b 40%, transparent 70%);
+      top: -120px; left: -100px;
+      animation: float1 18s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #d4a857 0%, #a8823a 45%, transparent 70%);
+      bottom: -180px; right: -150px;
+      animation: float2 22s ease-in-out infinite;
+    }
+    .orb-3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, #f0d089 0%, #d4a857 35%, transparent 65%);
+      top: 30%; right: 20%;
+      animation: float3 16s ease-in-out infinite;
+      opacity: 0.35;
+    }
+    .orb-4 {
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, #e8b864 0%, #c98a3b 40%, transparent 70%);
+      bottom: 25%; left: 15%;
+      animation: float4 20s ease-in-out infinite;
+      opacity: 0.4;
+    }
+    .orb-5 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, #f5dca0 0%, #e8b864 50%, transparent 75%);
+      top: 15%; left: 45%;
+      animation: float5 14s ease-in-out infinite;
+      opacity: 0.3;
+    }
+    .orb-6 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, #c98a3b 0%, #8b5e2a 40%, transparent 70%);
+      bottom: -80px; left: 35%;
+      animation: float6 24s ease-in-out infinite;
+      opacity: 0.35;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(60px, 40px) scale(1.08); }
+      66%      { transform: translate(-30px, 80px) scale(0.95); }
+    }
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(-80px, -50px) scale(1.1); }
+      66%      { transform: translate(40px, -90px) scale(0.92); }
+    }
+    @keyframes float3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(-70px, 60px) scale(1.15); }
+    }
+    @keyframes float4 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(80px, -50px) scale(1.1); }
+    }
+    @keyframes float5 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25%      { transform: translate(40px, 30px) scale(1.2); }
+      75%      { transform: translate(-30px, -40px) scale(0.9); }
+    }
+    @keyframes float6 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      40%      { transform: translate(50px, -60px) scale(1.05); }
+      80%      { transform: translate(-60px, 30px) scale(0.98); }
+    }
+
+    /* Noise */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.06;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Vignette */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%);
+    }
+
+    /* ========== Glass panel ========== */
+    .glass-panel {
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 50%,
+        rgba(255, 255, 255, 0.06) 100%
+      );
+      backdrop-filter: blur(30px) saturate(140%);
+      -webkit-backdrop-filter: blur(30px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .glass-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      pointer-events: none;
+    }
+
+    /* ========== Nav link ========== */
+    .nav-link {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #d4a857, transparent);
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .nav-link:hover { color: #f0d089; }
+    .nav-link:hover::after { width: 100%; }
+    .nav-link.active { color: #f0d089; }
+    .nav-link.active::after { width: 100%; }
+
+    /* ========== Avatar ========== */
+    .avatar-wrap { position: relative; cursor: pointer; }
+    .avatar-ring {
+      background: linear-gradient(135deg, #f0d089, #d4a857, #a8823a, #f0d089);
+      background-size: 300% 300%;
+      animation: ringGradient 6s ease infinite;
+      padding: 2px;
+      border-radius: 50%;
+      box-shadow: 0 0 40px rgba(212, 168, 87, 0.25), 0 0 80px rgba(212, 168, 87, 0.1);
+      transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .avatar-wrap:hover .avatar-ring {
+      box-shadow: 0 0 60px rgba(212, 168, 87, 0.4), 0 0 100px rgba(212, 168, 87, 0.2);
+      transform: scale(1.03);
+    }
+    @keyframes ringGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+    .avatar-inner {
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+    }
+    .avatar-upload-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 50%;
+      color: #f0d089;
+      font-size: 0.7rem;
+      gap: 4px;
+    }
+    .avatar-wrap:hover .avatar-upload-hint { opacity: 1; }
+
+    /* ========== Button ========== */
+    .btn-primary {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #d4a857, #c98a3b);
+      color: #1a1205;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 20px rgba(212, 168, 87, 0.3), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      overflow: hidden;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 30px rgba(212, 168, 87, 0.4), 0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    }
+    .btn-primary:active { transform: translateY(0) scale(0.98); }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 0.6s ease;
+    }
+    .btn-primary:hover::before { left: 100%; }
+
+    /* ========== Divider ========== */
+    .gold-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 168, 87, 0.3), transparent);
+    }
+
+    /* ========== Tag ========== */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(212, 168, 87, 0.1);
+      border: 1px solid rgba(212, 168, 87, 0.25);
+      color: #e8b864;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+    .tag-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #e8b864;
+      box-shadow: 0 0 8px #e8b864;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px #e8b864; }
+      50%      { opacity: 0.6; box-shadow: 0 0 14px #e8b864; }
+    }
+
+    /* ========== Entrance animations ========== */
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      opacity: 0;
+      animation: fadeIn 1.2s ease forwards;
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+    .scale-in {
+      opacity: 0;
+      transform: scale(0.95);
+      animation: scaleIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+
+    .reveal-up {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-up.in { opacity: 1; transform: translateY(0); }
+
+    /* ========== Skill card ========== */
+    .skill-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 2rem 1.2rem;
+      border-radius: 1.25rem;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+      );
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .skill-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 168, 87, 0.3), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .skill-card:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(212, 168, 87, 0.08) 0%,
+        rgba(212, 168, 87, 0.02) 100%
+      );
+      border-color: rgba(212, 168, 87, 0.3);
+      transform: translateY(-6px);
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(212, 168, 87, 0.08);
+    }
+    .skill-card:hover::before { opacity: 1; }
+    .skill-icon {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e8b864;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .skill-card:hover .skill-icon {
+      color: #f0d089;
+      transform: scale(1.12);
+      filter: drop-shadow(0 0 12px rgba(212, 168, 87, 0.6));
+    }
+    .skill-name {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.03em;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    .skill-card:hover .skill-name { color: #f0d089; }
+
+    /* Section label */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      color: rgba(212, 168, 87, 0.8);
+      text-transform: uppercase;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+    }
+    .section-label::before {
+      content: '';
+      width: 28px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 168, 87, 0.5));
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: relative;
+      width: 26px;
+      height: 42px;
+      border: 1.5px solid rgba(212, 168, 87, 0.4);
+      border-radius: 13px;
+    }
+    .scroll-indicator::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 8px;
+      background: #e8b864;
+      border-radius: 2px;
+      animation: scroll-wheel 2.2s ease-in-out infinite;
+      box-shadow: 0 0 10px rgba(232, 184, 100, 0.8);
+    }
+    @keyframes scroll-wheel {
+      0% { top: 6px; opacity: 1; }
+      50% { top: 22px; opacity: 0.4; }
+      100% { top: 6px; opacity: 1; }
+    }
+
+    /* ========== Work card ========== */
+    .work-card {
+      position: relative;
+      border-radius: 1.25rem;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .work-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(212, 168, 87, 0.35);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5), 0 0 50px rgba(212, 168, 87, 0.1);
+    }
+    .work-thumb {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+    }
+    .work-thumb-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .work-card:hover .work-thumb-bg { transform: scale(1.1); }
+    .work-thumb-glow {
+      position: absolute;
+      top: 48%; left: 50%;
+      width: 60%; aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      filter: blur(36px);
+      opacity: 0.5;
+      transition: opacity 0.5s ease;
+    }
+    .work-card:hover .work-thumb-glow { opacity: 0.8; }
+    .work-thumb-icon {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(232, 184, 100, 0.45);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .work-card:hover .work-thumb-icon {
+      color: rgba(240, 208, 137, 0.85);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    .work-cat {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      z-index: 2;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(212, 168, 87, 0.25);
+      color: #e8b864;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+    .work-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to top, rgba(10, 10, 10, 0.88), rgba(10, 10, 10, 0.35));
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .work-card:hover .work-overlay { opacity: 1; }
+    .work-view {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(212, 168, 87, 0.92), rgba(201, 138, 59, 0.92));
+      color: #1a1205;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transform: translateY(12px);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .work-card:hover .work-view { transform: translateY(0); }
+    .work-info { padding: 1.2rem 1.3rem 1.4rem; }
+    .work-info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f5f5f5;
+      margin: 0 0 0.35rem;
+      transition: color 0.3s ease;
+    }
+    .work-card:hover .work-info h3 { color: #f0d089; }
+    .work-info p {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+    .work-thumb-1 .work-thumb-bg { background: linear-gradient(135deg, #2a1a08 0%, #4a2f10 45%, #1a1205 100%); }
+    .work-thumb-1 .work-thumb-glow { background: radial-gradient(circle, #e8b864, transparent 70%); }
+    .work-thumb-2 .work-thumb-bg { background: linear-gradient(135deg, #1f1410 0%, #3d2818 45%, #15100a 100%); }
+    .work-thumb-2 .work-thumb-glow { background: radial-gradient(circle, #c98a3b, transparent 70%); }
+    .work-thumb-3 .work-thumb-bg { background: linear-gradient(135deg, #2d1a05 0%, #5a3815 45%, #1a1004 100%); }
+    .work-thumb-3 .work-thumb-glow { background: radial-gradient(circle, #f0d089, transparent 70%); }
+    .work-thumb-4 .work-thumb-bg { background: linear-gradient(135deg, #0a0f14 0%, #1a2530 50%, #05080a 100%); }
+    .work-thumb-4 .work-thumb-glow { background: radial-gradient(circle, #d4a857, transparent 70%); }
+    .work-thumb-5 .work-thumb-bg { background: linear-gradient(135deg, #2a1018 0%, #4a1820 45%, #15080a 100%); }
+    .work-thumb-5 .work-thumb-glow { background: radial-gradient(circle, #e8b864, transparent 70%); }
+    .work-thumb-6 .work-thumb-bg { background: linear-gradient(135deg, #1a1a08 0%, #303014 45%, #0e0e06 100%); }
+    .work-thumb-6 .work-thumb-glow { background: radial-gradient(circle, #c98a3b, transparent 70%); }
+
+    /* ========== Process ========== */
+    .process-line {
+      position: absolute;
+      top: 36px;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 168, 87, 0.3) 15%, rgba(212, 168, 87, 0.3) 85%, transparent);
+    }
+    .process-num {
+      width: 72px; height: 72px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+      border: 1px solid rgba(212, 168, 87, 0.3);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #e8b864;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 0 6px #0a0a0a;
+      position: relative;
+      z-index: 2;
+    }
+    .process-step:hover .process-num {
+      border-color: rgba(212, 168, 87, 0.6);
+      box-shadow: 0 0 30px rgba(212, 168, 87, 0.2), 0 0 0 6px #0a0a0a;
+      transform: translateY(-4px);
+    }
+
+    /* ========== Stat ========== */
+    .stat-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    /* ========== Contact ========== */
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .contact-item:last-child { border-bottom: none; }
+    .contact-icon {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: rgba(212, 168, 87, 0.08);
+      border: 1px solid rgba(212, 168, 87, 0.2);
+      color: #e8b864;
+      transition: all 0.3s ease;
+    }
+    .contact-item:hover .contact-icon {
+      background: rgba(212, 168, 87, 0.15);
+      border-color: rgba(212, 168, 87, 0.4);
+      transform: scale(1.05);
+    }
+
+    /* ========== Footer ========== */
+    .footer-link {
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 0.8rem;
+      transition: color 0.3s ease;
+    }
+    .footer-link:hover { color: #f0d089; }
+
+    /* ========== Edit Mode ========== */
+    body.edit-mode { padding-top: 52px; }
+    body.edit-mode [data-edit] {
+      outline: 1px dashed rgba(212, 168, 87, 0.35);
+      outline-offset: 3px;
+      cursor: text;
+      border-radius: 2px;
+      transition: outline-color 0.2s, background 0.2s;
+    }
+    body.edit-mode [data-edit]:hover {
+      outline-color: rgba(212, 168, 87, 0.8);
+      background: rgba(212, 168, 87, 0.06);
+    }
+    body.edit-mode [data-edit]:focus {
+      outline: 2px solid #d4a857;
+      background: rgba(212, 168, 87, 0.1);
+    }
+    .edit-toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+      border-bottom: 1px solid rgba(212, 168, 87, 0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      font-size: 13px;
+    }
+    .edit-toolbar.active { display: flex; }
+    .edit-toolbar .edit-info { color: #e8b864; display: flex; align-items: center; gap: 8px; }
+    .edit-toolbar .edit-actions { display: flex; align-items: center; gap: 10px; }
+    .edit-toolbar button {
+      padding: 6px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .edit-toolbar .btn-save {
+      background: linear-gradient(135deg, #d4a857, #c98a3b);
+      color: #1a1205;
+    }
+    .edit-toolbar .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,87,0.4); }
+    .edit-toolbar .btn-exit {
+      background: rgba(255,255,255,0.08);
+      color: #f5f5f5;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .edit-toolbar .btn-exit:hover { background: rgba(255,255,255,0.15); }
+    .edit-hint {
+      position: fixed;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: none;
+      padding: 8px 20px;
+      background: rgba(10,10,10,0.9);
+      border: 1px solid rgba(212,168,87,0.3);
+      border-radius: 999px;
+      color: #e8b864;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .edit-hint.active { display: block; }
+
+    /* ========== Work detail overlay ========== */
+    .work-detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: #0a0a0a;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .work-detail-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .work-detail-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .work-detail-close {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #f5f5f5;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .work-detail-close:hover {
+      background: rgba(212, 168, 87, 0.15);
+      border-color: rgba(212, 168, 87, 0.3);
+      color: #f0d089;
+    }
+    .work-detail-title-bar {
+      color: #e8b864;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .work-detail-main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+    .work-detail-main img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .work-detail-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: rgba(212, 168, 87, 0.4);
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      border: 1px dashed rgba(212, 168, 87, 0.2);
+    }
+    .work-detail-placeholder p {
+      font-size: 13px;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .work-detail-section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: rgba(212, 168, 87, 0.7);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .work-detail-section-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: rgba(212, 168, 87, 0.4);
+    }
+
+    /* ========== Hero background & panel scroll ========== */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      border-radius: 0;
+    }
+    .hero-bg img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0.55;
+      will-change: opacity;
+      animation: heroBgZoom 24s ease-in-out infinite alternate;
+    }
+    .hero-bg img#hero-bg-2 {
+      opacity: 0;
+      animation-delay: -12s;
+    }
+    @keyframes heroBgZoom {
+      0%   { transform: scale(1) translateY(0); }
+      100% { transform: scale(1.1) translateY(-2%); }
+    }
+    .hero-bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(10, 10, 10, 0.15) 0%,
+        rgba(10, 10, 10, 0.35) 50%,
+        rgba(10, 10, 10, 0.7) 100%
+      );
+      pointer-events: none;
+    }
+    .hero-panel-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 64rem;
+      margin: 0 auto;
+      transition: transform 0.15s linear;
+    }
+
+    /* ========== Hero new layout ========== */
+    .hero-main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    @media (min-width: 768px) {
+      .hero-main { grid-template-columns: 0.85fr 1.15fr; }
+    }
+    .hero-avatar-card {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 36px 28px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hero-avatar-card::before {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 28px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(240,208,137,0.25), rgba(212,168,87,0.05), transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      pointer-events: none;
+    }
+    .hero-avatar-card:hover {
+      border-color: rgba(212,168,87,0.18);
+      box-shadow: 0 0 40px rgba(212,168,87,0.08);
+    }
+    .hero-avatar-card .avatar-ring {
+      width: 200px; height: 200px;
+    }
+    @media (min-width: 640px) {
+      .hero-avatar-card .avatar-ring { width: 240px; height: 240px; }
+    }
+    @media (min-width: 1024px) {
+      .hero-avatar-card .avatar-ring { width: 280px; height: 280px; }
+    }
+    .hero-avatar-card .avatar-name {
+      margin-top: 20px; text-align: center;
+    }
+    .hero-avatar-card .avatar-name h2 {
+      font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 600; color: #fff;
+    }
+    .hero-avatar-card .avatar-name p {
+      font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 6px; letter-spacing: 0.05em;
+    }
+    .hero-content-right {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .hero-content-right .greeting {
+      font-size: 0.75rem; letter-spacing: 0.2em; color: rgba(212,168,87,0.8);
+      text-transform: uppercase; font-weight: 500;
+    }
+    .hero-content-right h1 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: #fff;
+    }
+    .hero-content-right .hero-subtitle {
+      font-size: 1.05rem; font-weight: 500; color: rgba(255,255,255,0.65);
+    }
+    .hero-content-right .hero-desc {
+      font-size: 0.9rem; line-height: 1.8; color: rgba(255,255,255,0.45);
+      max-width: 480px;
+    }
+    .hero-tags {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;
+    }
+    .hero-tag {
+      padding: 5px 12px; border-radius: 999px; font-size: 11px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.55);
+    }
+    .hero-avatar-card .avatar-inner img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+    }
+    .hero-avatar-card .avatar-upload-hint {
+      background: rgba(0,0,0,0.5);
+    }
+    .hero-avatar-card .avatar-upload-hint svg { margin-bottom: 2px; }
+
+    /* ========== Right-side scroll indicator ========== */
+    .scroll-indicator-right {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 50;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .scroll-indicator-line {
+      position: absolute; left: 50%; top: 0; bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+      transform: translateX(-50%);
+      z-index: 0;
+    }
+    .scroll-indicator-dot {
+      position: relative; z-index: 1;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+    }
+    .scroll-indicator-dot:hover {
+      background: rgba(212,168,87,0.5);
+      transform: scale(1.2);
+    }
+    .scroll-indicator-dot.active {
+      background: var(--gold);
+      box-shadow: 0 0 12px rgba(212,168,87,0.6), 0 0 24px rgba(212,168,87,0.3);
+      transform: scale(1.4);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .scroll-indicator-dot::after {
+      content: attr(data-label); position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+      font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 0.1em;
+      opacity: 0; transition: opacity 0.3s; white-space: nowrap; pointer-events: none;
+    }
+    .scroll-indicator-dot:hover::after,
+    .scroll-indicator-dot.active::after {
+      opacity: 1; color: var(--gold-light);
+    }
+    @media (max-width: 1024px) {
+      .scroll-indicator-right { right: 14px; gap: 12px; }
+      .scroll-indicator-dot::after { display: none; }
+    }
+    @media (max-width: 640px) {
+      .scroll-indicator-right { display: none; }
+    }
+
+    /* ========== WeChat QR modal ========== */
+    .qr-modal {
+      position: fixed; inset: 0; z-index: 20000;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+    .qr-modal.active { opacity: 1; pointer-events: auto; }
+    .qr-card {
+      max-width: 360px; width: 100%;
+      background: rgba(20,20,20,0.95);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+      position: relative;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .qr-modal.active .qr-card { transform: translateY(0) scale(1); }
+    .qr-card h3 {
+      font-family: 'Noto Serif SC', serif; font-size: 1.25rem; color: #fff; margin-bottom: 8px;
+    }
+    .qr-card p {
+      font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-bottom: 20px; line-height: 1.6;
+    }
+    .qr-img-wrap {
+      width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .qr-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+    .qr-placeholder {
+      color: rgba(212,168,87,0.35); font-size: 12px; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .qr-note {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 999px;
+      background: rgba(212,168,87,0.1); border: 1px solid rgba(212,168,87,0.2);
+      color: var(--gold-light); font-size: 12px; font-weight: 500;
+    }
+    .qr-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.3s;
+    }
+    .qr-close:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
+    .qr-upload-btn {
+      margin-top: 16px; padding: 8px 18px; border-radius: 999px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer; transition: all 0.3s;
+    }
+    .qr-upload-btn:hover { background: rgba(212,168,87,0.1); border-color: rgba(212,168,87,0.3); color: var(--gold-light); }
+
+    /* ========== Work detail gallery ========== */
+    .wd-gallery {
+      position: relative;
+      margin-bottom: 48px;
+    }
+    .wd-main-image-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .wd-main-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .wd-gallery-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .wd-gallery-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      background: #141414;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .wd-gallery-thumb:hover {
+      border-color: rgba(212, 168, 87, 0.4);
+    }
+    .wd-gallery-thumb.active {
+      border-color: #d4a857;
+    }
+    .wd-gallery-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .wd-gallery-arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #f5f5f5;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .wd-gallery-arrow:hover {
+      background: rgba(212, 168, 87, 0.15);
+      color: #f0d089;
+    }
+    .wd-gallery-arrow:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .wd-gallery-counter {
+      color: rgba(255,255,255,0.35);
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* ========== A+ section ========== */
+    .wd-aplus-section {
+      margin-top: 48px;
+    }
+    .wd-aplus-grid {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+    .wd-aplus-grid.gapped {
+      gap: 16px;
+    }
+    .wd-aplus-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #141414;
+      border-radius: 0;
+      line-height: 0;
+    }
+    .wd-aplus-item.gap-rounded {
+      border-radius: 12px;
+    }
+    .wd-aplus-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .wd-aplus-size-970 {
+      max-width: 970px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .wd-aplus-size-1460 {
+      max-width: 1460px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="bokeh-layer">
+    <div class="bokeh-orb orb-1"></div>
+    <div class="bokeh-orb orb-2"></div>
+    <div class="bokeh-orb orb-3"></div>
+    <div class="bokeh-orb orb-4"></div>
+    <div class="bokeh-orb orb-5"></div>
+    <div class="bokeh-orb orb-6"></div>
+  </div>
+  <div class="vignette"></div>
+  <div class="noise-overlay"></div>
+
+  <!-- 编辑模式工具栏 -->
+  <div id="edit-toolbar" class="edit-toolbar">
+    <div class="edit-info">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      <span>编辑模式已开启 — 点击文字直接修改</span>
+    </div>
+    <div class="edit-actions">
+      <button class="btn-save">💾 保存修改</button>
+      <button class="btn-exit">退出编辑</button>
+    </div>
+  </div>
+  <div id="edit-hint" class="edit-hint">按 Ctrl+Shift+E 退出编辑模式 · 修改后请点击"保存修改"</div>
+
+  <!-- ===================================================== -->
+  <!-- 第一屏：Hero 毛玻璃面板 -->
+  <!-- ===================================================== -->
+  <section id="hero" class="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-36 pb-14 min-h-[92vh]">
+
+    <!-- 16:9 Hero 背景图（双图交叉淡入） -->
+    <div class="hero-bg">
+      <img src="images/hero-bg.jpg?v=2" alt="hero background 1" id="hero-bg-1">
+      <img src="images/hero-bg-2.jpg?v=2" alt="hero background 2" id="hero-bg-2">
+      <div class="hero-bg-overlay"></div>
+    </div>
+
+    <!-- 毛玻璃面板 wrapper -->
+    <div class="hero-panel-wrapper" style="transition: transform 0.1s linear;">
+      <div class="glass-panel w-full max-w-5xl rounded-[2.5rem] scale-in" style="animation-delay: 0.2s;">
+
+      <!-- ===== 顶部导航栏 ===== -->
+      <nav class="flex items-center justify-between px-8 sm:px-12 pt-8 pb-6 fade-in-up" style="animation-delay: 0.4s;">
+        <!-- 左侧品牌名 -->
+        <a href="#hero" class="font-bold text-lg tracking-[0.2em] text-white">
+          YOUCAI
+        </a>
+        <!-- 右侧导航菜单 -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#hero" class="nav-link active text-sm font-light">首页</a>
+          <a href="#skills" class="nav-link text-sm font-light text-white/70">技能</a>
+          <a href="#works" class="nav-link text-sm font-light text-white/70">作品</a>
+          <a href="#process" class="nav-link text-sm font-light text-white/70">流程</a>
+          <a href="#contact" class="nav-link text-sm font-light text-white/70">联系</a>
+        </div>
+        <!-- 移动端菜单按钮 -->
+        <button class="md:hidden w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+            <line x1="3" y1="7" x2="21" y2="7"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="17" x2="21" y2="17"/>
+          </svg>
+        </button>
+      </nav>
+
+      <div class="gold-divider mx-8 sm:mx-12 fade-in" style="animation-delay: 0.6s;"></div>
+
+      <!-- ===== 中部内容区：左头像卡片 + 右介绍 ===== -->
+      <div class="px-8 sm:px-12 py-12 sm:py-16">
+        <div class="hero-main">
+
+          <!-- 左侧：头像独立卡片 -->
+          <div class="hero-avatar-card fade-in-up" style="animation-delay: 0.7s;">
+            <div class="avatar-wrap" title="点击更换头像" id="avatar-wrap">
+              <div class="avatar-ring">
+                <div class="avatar-inner w-full h-full flex items-center justify-center">
+                  <svg id="avatar-default" viewBox="0 0 100 100" width="55%" height="55%" fill="none">
+                    <circle cx="50" cy="38" r="16" fill="rgba(212, 168, 87, 0.3)"/>
+                    <path d="M20 82 C20 62, 80 62, 80 82" fill="rgba(212, 168, 87, 0.3)"/>
+                  </svg>
+                  <img id="avatar-img" src="" alt="头像" style="display:none;">
+                  <div class="avatar-upload-hint">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>更换头像</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="avatar-name">
+              <h2 data-edit="hero-name">帅财</h2>
+              <p data-edit="hero-title">亚马逊电商设计师</p>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none;">
+          </div>
+
+          <!-- 右侧：基础个人介绍 -->
+          <div class="hero-content-right fade-in-up" style="animation-delay: 0.9s;">
+            <span class="greeting" data-edit="hero-greeting">Hello · Welcome</span>
+
+            <h1 data-edit="hero-heading">
+              <span style="background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">帅财</span>
+              <span> 的视觉设计工作室</span>
+            </h1>
+
+            <p class="hero-subtitle" data-edit="hero-subtitle">
+              专注亚马逊电商视觉设计 · 3D 产品渲染 · 高转化主图与 A+ 页面
+            </p>
+
+            <p class="hero-desc" data-edit="hero-desc">
+              擅长用 3D 建模与光影塑造产品质感，让每一件商品在 3 秒内抓住买家目光。服务覆盖智能家居、个护健康、户外装备、厨房电器等多个品类。
+            </p>
+
+            <div class="hero-tags" data-edit="hero-tags">
+              <span class="hero-tag">3D 渲染</span>
+              <span class="hero-tag">A+ 页面</span>
+              <span class="hero-tag">产品建模</span>
+              <span class="hero-tag">品牌视觉</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 底部状态栏 + 滚动提示 -->
+      <div class="px-8 sm:px-12 pb-6 flex items-center justify-between text-[10px] text-white/30 font-mono fade-in" style="animation-delay: 1.2s;">
+        <div class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400" style="box-shadow: 0 0 6px #4ade80;"></span>
+          <span>ONLINE</span>
+        </div>
+        <a href="#skills" class="hidden sm:flex flex-col items-center gap-2 group">
+          <span class="tracking-widest text-white/40 group-hover:text-gold transition-colors">SCROLL</span>
+          <div class="scroll-indicator"></div>
+        </a>
+        <div class="tracking-wider"></div>
+      </div>
+
+    </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== -->
+  <!-- 第二屏：专业技能 -->
+  <!-- ===================================================== -->
+  <section id="skills" class="relative z-10 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-16">
+
+    <div class="w-full max-w-5xl mx-auto">
+
+      <!-- 标题区 -->
+      <div class="text-center mb-14 reveal-up">
+        <div class="section-label justify-center mb-5" style="justify-content: center;">
+          <span></span>
+          专业技能
+          <span></span>
+        </div>
+        <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white mb-4" data-edit="skills-heading">
+          我的<span style="background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">设计武器库</span>
+        </h2>
+        <p class="text-white/45 max-w-md mx-auto text-sm leading-relaxed" data-edit="skills-subtitle">
+          从平面设计到 3D 渲染，从视频剪辑到动效制作，全链路视觉能力一站式解决
+        </p>
+      </div>
+
+      <!-- 技能卡片网格 -->
+      <!-- 新增技能: 复制一个 skill-card div 即可 -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5 reveal-up" style="transition-delay: 0.1s;">
+
+        <!-- 技能 1: Photoshop -->
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(212, 168, 87, 0.08)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="24" y="31" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor" font-family="Inter, sans-serif">Ps</text>
+            </svg>
+          </div>
+          <span class="skill-name">Photoshop</span>
+        </div>
+
+        <!-- 技能 2: Illustrator -->
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(212, 168, 87, 0.08)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="24" y="31" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor" font-family="Inter, sans-serif">Ai</text>
+            </svg>
+          </div>
+          <span class="skill-name">Illustrator</span>
+        </div>
+
+        <!-- 技能 3: Premiere Pro -->
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(212, 168, 87, 0.08)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="24" y="31" text-anchor="middle" font-size="17" font-weight="700" fill="currentColor" font-family="Inter, sans-serif">Pr</text>
+            </svg>
+          </div>
+          <span class="skill-name">Premiere Pro</span>
+        </div>
+
+        <!-- 技能 4: 剪映 -->
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(212, 168, 87, 0.08)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="24" y="31" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor" font-family="Inter, sans-serif">简映</text>
+            </svg>
+          </div>
+          <span class="skill-name">剪映</span>
+        </div>
+
+        <!-- 技能 5: Cinema 4D -->
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(212, 168, 87, 0.08)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="24" y="31" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor" font-family="Inter, sans-serif">C4D</text>
+            </svg>
+          </div>
+          <span class="skill-name">Cinema 4D</span>
+        </div>
+
+        <!-- 技能 6: Octane Render -->
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(212, 168, 87, 0.08)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="24" y="31" text-anchor="middle" font-size="17" font-weight="700" fill="currentColor" font-family="Inter, sans-serif">OC</text>
+            </svg>
+          </div>
+          <span class="skill-name">Octane Render</span>
+        </div>
+
+        <!-- 预留扩展位置: 复制上面的 skill-card 结构添加新技能即可 -->
+
+      </div>
+
+      <!-- 底部说明 -->
+      <div class="text-center mt-14 reveal-up" style="transition-delay: 0.2s;">
+        <p class="text-white/35 text-xs font-mono tracking-wider">
+          — 持续学习 · 不断进化 —
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================== -->
+  <!-- 第三屏：精选作品 -->
+  <!-- ===================================================== -->
+  <section id="works" class="relative z-10 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
+    <div class="w-full max-w-5xl mx-auto">
+
+      <!-- 标题区 -->
+      <div class="text-center mb-14 reveal-up">
+        <div class="section-label justify-center mb-5" style="justify-content: center;">
+          <span></span>
+          精选作品
+          <span></span>
+        </div>
+        <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white mb-4" data-edit="works-heading">
+          用<span style="background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">作品</span>说话
+        </h2>
+        <p class="text-white/45 max-w-md mx-auto text-sm leading-relaxed" data-edit="works-subtitle">
+          每一件作品都是一次品牌与用户之间的视觉对话
+        </p>
+      </div>
+
+      <!-- 作品网格 -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 reveal-up" style="transition-delay: 0.1s;">
+
+        <!-- 作品 1 -->
+        <div class="work-card">
+          <div class="work-thumb work-thumb-1">
+            <div class="work-thumb-bg"></div>
+            <div class="work-thumb-glow"></div>
+            <span class="work-cat">3D 渲染</span>
+            <svg class="work-thumb-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            <div class="work-overlay">
+              <span class="work-view">查看作品 →</span>
+            </div>
+          </div>
+          <div class="work-info">
+            <h3>智能家居主图设计</h3>
+            <p>3D 建模 · 产品渲染 · 主图合成</p>
+          </div>
+        </div>
+
+        <!-- 作品 2 -->
+        <div class="work-card">
+          <div class="work-thumb work-thumb-2">
+            <div class="work-thumb-bg"></div>
+            <div class="work-thumb-glow"></div>
+            <span class="work-cat">A+ 页面</span>
+            <svg class="work-thumb-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="21" x2="9" y2="9"/>
+            </svg>
+            <div class="work-overlay">
+              <span class="work-view">查看作品 →</span>
+            </div>
+          </div>
+          <div class="work-info">
+            <h3>个护健康 A+ 页面</h3>
+            <p>品牌视觉 · 详情页 · 卖点提炼</p>
+          </div>
+        </div>
+
+        <!-- 作品 3 -->
+        <div class="work-card">
+          <div class="work-thumb work-thumb-3">
+            <div class="work-thumb-bg"></div>
+            <div class="work-thumb-glow"></div>
+            <span class="work-cat">产品建模</span>
+            <svg class="work-thumb-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+            </svg>
+            <div class="work-overlay">
+              <span class="work-view">查看作品 →</span>
+            </div>
+          </div>
+          <div class="work-info">
+            <h3>户外装备产品建模</h3>
+            <p>高精度建模 · 材质还原 · 场景渲染</p>
+          </div>
+        </div>
+
+        <!-- 作品 4 -->
+        <div class="work-card">
+          <div class="work-thumb work-thumb-4">
+            <div class="work-thumb-bg"></div>
+            <div class="work-thumb-glow"></div>
+            <span class="work-cat">视觉设计</span>
+            <svg class="work-thumb-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <div class="work-overlay">
+              <span class="work-view">查看作品 →</span>
+            </div>
+          </div>
+          <div class="work-info">
+            <h3>厨房电器详情页</h3>
+            <p>场景合成 · 光影塑造 · 卖点可视化</p>
+          </div>
+        </div>
+
+        <!-- 作品 5 -->
+        <div class="work-card">
+          <div class="work-thumb work-thumb-5">
+            <div class="work-thumb-bg"></div>
+            <div class="work-thumb-glow"></div>
+            <span class="work-cat">动效制作</span>
+            <svg class="work-thumb-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+            <div class="work-overlay">
+              <span class="work-view">查看作品 →</span>
+            </div>
+          </div>
+          <div class="work-info">
+            <h3>美妆主图视频</h3>
+            <p>动态展示 · 质感特写 · 节奏剪辑</p>
+          </div>
+        </div>
+
+        <!-- 作品 6 -->
+        <div class="work-card">
+          <div class="work-thumb work-thumb-6">
+            <div class="work-thumb-bg"></div>
+            <div class="work-thumb-glow"></div>
+            <span class="work-cat">品牌视觉</span>
+            <svg class="work-thumb-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="7"/>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+            </svg>
+            <div class="work-overlay">
+              <span class="work-view">查看作品 →</span>
+            </div>
+          </div>
+          <div class="work-info">
+            <h3>母婴用品品牌视觉</h3>
+            <p>VI 规范 · 包装设计 · 视觉统一</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 查看全部作品按钮 -->
+      <div class="text-center mt-12 reveal-up" style="transition-delay: 0.3s;">
+        <a href="works.html" class="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-gold/30 text-gold/80 text-sm font-medium tracking-wide hover:bg-gold/10 hover:border-gold/50 hover:text-gold transition-all duration-300">
+          查看全部作品
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+  <!-- ===================================================== -->
+  <section id="process" class="relative z-10 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
+    <div class="w-full max-w-5xl mx-auto">
+
+      <!-- 标题区 -->
+      <div class="text-center mb-16 reveal-up">
+        <div class="section-label justify-center mb-5" style="justify-content: center;">
+          <span></span>
+          服务流程
+          <span></span>
+        </div>
+        <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white mb-4" data-edit="process-heading">
+          四步<span style="background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">打造爆款视觉</span>
+        </h2>
+        <p class="text-white/45 max-w-md mx-auto text-sm leading-relaxed" data-edit="process-subtitle">
+          从沟通到交付，每一步都透明可控
+        </p>
+      </div>
+
+      <!-- 流程步骤 -->
+      <div class="relative reveal-up" style="transition-delay: 0.1s;">
+        <div class="process-line hidden lg:block"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6">
+
+          <div class="process-step text-center sm:text-left lg:text-center">
+            <div class="process-num" data-edit="process-num-1">01</div>
+            <h3 class="text-white font-medium text-base mt-6 mb-2" data-edit="process-title-1">需求沟通</h3>
+            <p class="text-white/45 text-xs leading-relaxed px-2" data-edit="process-desc-1">
+              深入了解产品卖点、目标市场与竞品，明确视觉方向
+            </p>
+          </div>
+
+          <div class="process-step text-center sm:text-left lg:text-center">
+            <div class="process-num" data-edit="process-num-2">02</div>
+            <h3 class="text-white font-medium text-base mt-6 mb-2" data-edit="process-title-2">方案设计</h3>
+            <p class="text-white/45 text-xs leading-relaxed px-2" data-edit="process-desc-2">
+              制定创意草图与视觉风格，确认构图、色调与表现重点
+            </p>
+          </div>
+
+          <div class="process-step text-center sm:text-left lg:text-center">
+            <div class="process-num" data-edit="process-num-3">03</div>
+            <h3 class="text-white font-medium text-base mt-6 mb-2" data-edit="process-title-3">渲染制作</h3>
+            <p class="text-white/45 text-xs leading-relaxed px-2" data-edit="process-desc-3">
+              3D 建模、材质灯光、合成精修，逐帧打磨到满意为止
+            </p>
+          </div>
+
+          <div class="process-step text-center sm:text-left lg:text-center">
+            <div class="process-num" data-edit="process-num-4">04</div>
+            <h3 class="text-white font-medium text-base mt-6 mb-2" data-edit="process-title-4">交付验收</h3>
+            <p class="text-white/45 text-xs leading-relaxed px-2" data-edit="process-desc-4">
+              多格式源文件输出，支持两轮迭代调整，确保上线无忧
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 数据成就 -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-20 reveal-up" style="transition-delay: 0.2s;">
+        <div class="text-center">
+          <div class="stat-num"><span class="counter" data-target="6" data-edit="stat-num-1">0</span>年</div>
+          <p class="text-white/45 text-xs mt-2 tracking-wide" data-edit="stat-label-1">行业经验</p>
+        </div>
+        <div class="text-center">
+          <div class="stat-num"><span class="counter" data-target="50" data-edit="stat-num-2">0</span>+</div>
+          <p class="text-white/45 text-xs mt-2 tracking-wide" data-edit="stat-label-2">合作品牌</p>
+        </div>
+        <div class="text-center">
+          <div class="stat-num"><span class="counter" data-target="1000" data-edit="stat-num-3">0</span>+</div>
+          <p class="text-white/45 text-xs mt-2 tracking-wide" data-edit="stat-label-3">完成作品</p>
+        </div>
+        <div class="text-center">
+          <div class="stat-num"><span class="counter" data-target="98" data-edit="stat-num-4">0</span>%</div>
+          <p class="text-white/45 text-xs mt-2 tracking-wide" data-edit="stat-label-4">客户好评</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================== -->
+  <!-- 第五屏：联系合作 -->
+  <!-- ===================================================== -->
+  <section id="contact" class="relative z-10 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
+    <div class="w-full max-w-5xl mx-auto">
+
+      <div class="glass-panel rounded-[2.5rem] p-8 sm:p-12 lg:p-16 reveal-up">
+
+        <div class="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+          <!-- 左侧：文案 + 联系方式 -->
+          <div>
+            <div class="section-label mb-5">
+              <span></span>
+              联系合作
+            </div>
+            <h2 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-4 leading-tight" data-edit="contact-heading">
+              让您的产品在<br/>亚马逊<span style="background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">脱颖而出</span>
+            </h2>
+            <p class="text-white/50 text-sm leading-relaxed mb-8 max-w-sm" data-edit="contact-desc">
+              无论你是品牌方还是卖家，欢迎聊聊你的产品。通常 24 小时内回复。
+            </p>
+
+            <div>
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-white/40 text-[10px] tracking-widest uppercase mb-0.5">微信</p>
+                  <p class="text-white text-sm font-medium" data-edit="contact-wechat">youcai-design</p>
+                </div>
+              </div>
+
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-white/40 text-[10px] tracking-widest uppercase mb-0.5">邮箱</p>
+                  <p class="text-white text-sm font-medium" data-edit="contact-email">shuai@youcai.design</p>
+                </div>
+              </div>
+
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-white/40 text-[10px] tracking-widest uppercase mb-0.5">电话</p>
+                  <p class="text-white text-sm font-medium" data-edit="contact-phone">+86 138 0000 0000</p>
+                </div>
+              </div>
+
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-white/40 text-[10px] tracking-widest uppercase mb-0.5">所在地</p>
+                  <p class="text-white text-sm font-medium" data-edit="contact-location">中国 · 深圳</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧：CTA 卡 -->
+          <div class="text-center">
+            <div class="inline-flex flex-col items-center p-8 sm:p-10 rounded-3xl border border-white/10" style="background: linear-gradient(135deg, rgba(212,168,87,0.08), rgba(212,168,87,0.02));">
+              <div class="w-16 h-16 rounded-full flex items-center justify-center mb-5" style="background: linear-gradient(135deg, rgba(240,208,137,0.15), rgba(201,138,59,0.1)); border: 1px solid rgba(212,168,87,0.3);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f0d089" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+              </div>
+              <h3 class="text-white font-serif text-xl font-semibold mb-2" data-edit="contact-cta-title">扫码添加微信</h3>
+              <p class="text-white/45 text-xs mb-7 max-w-[200px]" data-edit="contact-cta-desc">
+                添加微信时请备注来意，通常 24 小时内回复。
+              </p>
+              <button class="btn-primary" id="btn-wechat-qr">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="9" y1="21" x2="9" y2="9"/>
+                </svg>
+                <span>获取微信二维码</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 页脚 -->
+      <footer class="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <p class="text-white/30 text-xs font-mono tracking-wider">© 2025 YOUCAI · 帅财视觉设计工作室</p>
+      </footer>
+
+    </div>
+  </section>
+
+  <!-- 作品详情弹层 -->
+  <div id="work-detail-overlay" class="work-detail-overlay">
+    <div class="work-detail-header">
+      <div class="work-detail-title-bar">
+        <span id="wd-category">分类</span> · <span id="wd-title">作品标题</span>
+      </div>
+      <button id="wd-close" class="work-detail-close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        <span>关闭</span>
+      </button>
+    </div>
+    <div id="wd-main" class="work-detail-main"></div>
+  </div>
+
+  <!-- 右侧滚动进度指示器 -->
+  <div class="scroll-indicator-right" id="scroll-indicator"></div>
+
+  <!-- 微信二维码弹窗 -->
+  <div class="qr-modal" id="qr-modal">
+    <div class="qr-card">
+      <button class="qr-close" id="qr-close" title="关闭">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <h3 data-edit="qr-title">扫码添加微信</h3>
+      <p data-edit="qr-desc">添加时请备注来意，方便我快速回复你的需求。</p>
+      <div class="qr-img-wrap" id="qr-img-wrap">
+        <img id="qr-img" src="images/wechat-qr.jpg" alt="微信二维码" style="display:none;">
+        <div class="qr-placeholder" id="qr-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <p>请上传或放置微信二维码图片<br>images/wechat-qr.jpg</p>
+        </div>
+      </div>
+      <div class="qr-note" data-edit="qr-note">添加请备注：来意 / 产品 / 需求</div>
+      <button class="qr-upload-btn" id="qr-upload-btn">上传二维码图片</button>
+      <input type="file" id="qr-input" accept="image/*" style="display:none;">
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // Mouse parallax for bokeh orbs
+    // ============================================
+    (function() {
+      const orbs = document.querySelectorAll('.bokeh-orb');
+      let mouseX = 0, mouseY = 0;
+      let targetX = 0, targetY = 0;
+
+      document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      function animate() {
+        targetX += (mouseX - targetX) * 0.03;
+        targetY += (mouseY - targetY) * 0.03;
+        orbs.forEach((orb, i) => {
+          const depth = (i + 1) * 6;
+          orb.style.transform = `translate(${targetX * depth}px, ${targetY * depth}px)`;
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    // ============================================
+    // Nav active state on scroll
+    // ============================================
+    (function() {
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.nav-link');
+
+      function updateActive() {
+        const scrollY = window.scrollY + window.innerHeight / 3;
+        let current = '';
+        sections.forEach(section => {
+          if (scrollY >= section.offsetTop) current = section.id;
+        });
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          link.classList.add('text-white/70');
+          if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+            link.classList.remove('text-white/70');
+          }
+        });
+      }
+      window.addEventListener('scroll', updateActive);
+    })();
+
+    // ============================================
+    // Scroll reveal
+    // ============================================
+    (function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add('in');
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+
+      document.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
+    })();
+
+    // ============================================
+    // Avatar upload (localStorage + file fallback)
+    // ============================================
+    (function() {
+      const wrap = document.getElementById('avatar-wrap');
+      const input = document.getElementById('avatar-input');
+      const img = document.getElementById('avatar-img');
+      const defaultSvg = document.getElementById('avatar-default');
+      if (!wrap || !input || !img) return;
+
+      function setAvatar(src) {
+        if (!src) {
+          img.style.display = 'none';
+          if (defaultSvg) defaultSvg.style.display = 'block';
+          return;
+        }
+        img.src = src;
+        img.style.display = 'block';
+        if (defaultSvg) defaultSvg.style.display = 'none';
+      }
+
+      // 加载：优先 localStorage，否则尝试文件路径
+      const saved = localStorage.getItem('youcai_avatar');
+      if (saved) {
+        setAvatar(saved);
+      } else {
+        // 尝试加载 images/avatar.jpg，如果存在则使用
+        const fileImg = new Image();
+        fileImg.src = 'images/avatar.jpg';
+        fileImg.onload = function() { setAvatar('images/avatar.jpg'); };
+      }
+
+      wrap.addEventListener('click', () => input.click());
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const data = ev.target.result;
+          localStorage.setItem('youcai_avatar', data);
+          setAvatar(data);
+        };
+        reader.readAsDataURL(file);
+      });
+    })();
+
+    // ============================================
+    // WeChat QR code modal + upload
+    // ============================================
+    (function() {
+      const btn = document.getElementById('btn-wechat-qr');
+      const modal = document.getElementById('qr-modal');
+      const close = document.getElementById('qr-close');
+      const img = document.getElementById('qr-img');
+      const placeholder = document.getElementById('qr-placeholder');
+      const uploadBtn = document.getElementById('qr-upload-btn');
+      const input = document.getElementById('qr-input');
+      if (!btn || !modal) return;
+
+      function setQr(src) {
+        if (!src) {
+          img.style.display = 'none';
+          placeholder.style.display = 'flex';
+          return;
+        }
+        img.src = src;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+      }
+
+      // 加载：优先 localStorage，否则尝试文件路径
+      const saved = localStorage.getItem('youcai_qr');
+      if (saved) {
+        setQr(saved);
+      } else {
+        const fileImg = new Image();
+        fileImg.src = 'images/wechat-qr.jpg';
+        fileImg.onload = function() { setQr('images/wechat-qr.jpg'); };
+      }
+
+      function openModal() { modal.classList.add('active'); }
+      function closeModal() { modal.classList.remove('active'); }
+
+      btn.addEventListener('click', openModal);
+      close.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+
+      uploadBtn.addEventListener('click', () => input.click());
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const data = ev.target.result;
+          localStorage.setItem('youcai_qr', data);
+          setQr(data);
+        };
+        reader.readAsDataURL(file);
+      });
+    })();
+
+    // ============================================
+    // Right-side scroll indicator
+    // ============================================
+    (function() {
+      const sections = ['hero', 'skills', 'works', 'process', 'contact'];
+      const labels = ['首页', '技能', '作品', '流程', '联系'];
+      const container = document.getElementById('scroll-indicator');
+      if (!container) return;
+
+      // 创建竖线背景
+      const line = document.createElement('div');
+      line.className = 'scroll-indicator-line';
+      container.appendChild(line);
+
+      // 创建每个点
+      const dots = [];
+      sections.forEach((id, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'scroll-indicator-dot';
+        dot.dataset.label = labels[i];
+        dot.addEventListener('click', () => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        container.appendChild(dot);
+        dots.push(dot);
+      });
+
+      let ticking = false;
+      function update() {
+        const scrollY = window.scrollY + window.innerHeight * 0.4;
+        let current = 0;
+        sections.forEach((id, i) => {
+          const el = document.getElementById(id);
+          if (el && scrollY >= el.offsetTop) current = i;
+        });
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === current));
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
+      update();
+    })();
+
+    // ============================================
+    // Smooth anchor scroll
+    // ============================================
+    (function() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+    })();
+
+    // ============================================
+    // Stat counter animation
+    // ============================================
+    (function() {
+      const counters = document.querySelectorAll('.counter');
+      if (!counters.length) return;
+
+      // 读取已保存的编辑，用于覆盖 data-target
+      let savedEdits = {};
+      try { savedEdits = JSON.parse(localStorage.getItem('youcai_edits') || '{}'); } catch(e) {}
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const editKey = el.dataset.edit;
+            let target;
+
+            if (editKey && savedEdits[editKey]) {
+              // 从保存的编辑中解析数字
+              const temp = document.createElement('div');
+              temp.innerHTML = savedEdits[editKey];
+              target = parseInt(temp.textContent, 10) || 0;
+              el.dataset.target = target; // 同步更新 data-target
+            } else {
+              target = parseInt(el.dataset.target, 10) || 0;
+            }
+
+            const duration = 1600;
+            const start = performance.now();
+            function tick(now) {
+              const p = Math.min((now - start) / duration, 1);
+              const eased = 1 - Math.pow(1 - p, 3);
+              el.textContent = Math.round(target * eased);
+              if (p < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+            observer.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+      counters.forEach(c => observer.observe(c));
+    })();
+
+    // ============================================
+    // Hero panel scroll parallax + background crossfade
+    // ============================================
+    (function() {
+      const wrapper = document.querySelector('.hero-panel-wrapper');
+      const bg1 = document.getElementById('hero-bg-1');
+      const bg2 = document.getElementById('hero-bg-2');
+      if (!wrapper) return;
+
+      const BG_OPACITY = 0.55;   // 背景图基础透明度
+      const FADE_RANGE = 800;     // 交叉淡入完成的滚动距离(px)
+      const MAX_SHIFT  = 220;     // 面板最大左移(px)
+
+      let ticking = false;
+
+      function update() {
+        const scrollY = window.scrollY;
+
+        // 面板左移
+        const move = Math.min(scrollY * 0.45, MAX_SHIFT);
+        wrapper.style.transform = 'translateX(-' + move + 'px)';
+
+        // 背景交叉淡入
+        if (bg1 && bg2) {
+          const progress = Math.min(scrollY / FADE_RANGE, 1);
+          bg1.style.opacity = BG_OPACITY * (1 - progress);
+          bg2.style.opacity = BG_OPACITY * progress;
+        }
+
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          window.requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
+
+      update();
+    })();
+
+    // ============================================
+    // Edit Mode (Ctrl+Shift+E 进入编辑)
+    // ============================================
+    (function() {
+      const EDIT_PASSWORD = 'youcai2026';
+
+      function enterEditMode() {
+        const pwd = prompt('请输入编辑密码：');
+        if (pwd !== EDIT_PASSWORD) {
+          if (pwd !== null) alert('密码错误');
+          return;
+        }
+        document.body.classList.add('edit-mode');
+        document.querySelectorAll('[data-edit]').forEach(el => {
+          el.contentEditable = true;
+        });
+        // 计数器显示最终数值，方便编辑（优先用已保存的值）
+        let se = {};
+        try { se = JSON.parse(localStorage.getItem('youcai_edits') || '{}'); } catch(e) {}
+        document.querySelectorAll('.counter').forEach(el => {
+          const k = el.dataset.edit;
+          if (k && se[k]) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = se[k];
+            el.textContent = parseInt(tmp.textContent, 10) || 0;
+          } else {
+            el.textContent = parseInt(el.dataset.target, 10) || 0;
+          }
+        });
+        document.getElementById('edit-toolbar').classList.add('active');
+        document.getElementById('edit-hint').classList.add('active');
+      }
+
+      function saveEdits() {
+        const edits = {};
+        document.querySelectorAll('[data-edit]').forEach(el => {
+          edits[el.dataset.edit] = el.innerHTML;
+        });
+        localStorage.setItem('youcai_edits', JSON.stringify(edits));
+        const btn = document.querySelector('.btn-save');
+        const orig = btn.textContent;
+        btn.textContent = '✓ 已保存';
+        btn.style.background = 'linear-gradient(135deg, #4ade80, #22c55e)';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+      }
+
+      function exitEditMode() {
+        document.body.classList.remove('edit-mode');
+        document.querySelectorAll('[data-edit]').forEach(el => {
+          el.contentEditable = false;
+        });
+        document.getElementById('edit-toolbar').classList.remove('active');
+        document.getElementById('edit-hint').classList.remove('active');
+      }
+
+      function loadEdits() {
+        const saved = localStorage.getItem('youcai_edits');
+        if (!saved) return;
+        try {
+          const edits = JSON.parse(saved);
+          Object.entries(edits).forEach(([key, html]) => {
+            const el = document.querySelector('[data-edit="' + key + '"]');
+            if (el) el.innerHTML = html;
+          });
+        } catch(e) {}
+      }
+
+      // 快捷键 Ctrl+Shift+E
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+          e.preventDefault();
+          if (document.body.classList.contains('edit-mode')) {
+            exitEditMode();
+          } else {
+            enterEditMode();
+          }
+        }
+      });
+
+      // 工具栏按钮
+      const saveBtn = document.querySelector('.btn-save');
+      const exitBtn = document.querySelector('.btn-exit');
+      if (saveBtn) saveBtn.addEventListener('click', saveEdits);
+      if (exitBtn) exitBtn.addEventListener('click', exitEditMode);
+
+      // 页面加载时恢复已保存的编辑
+      loadEdits();
+    })();
+
+    // ============================================
+    // 作品详情页（点击作品弹出全屏查看）
+    // ============================================
+    (function() {
+      // 作品数据配置（首页精选，对应 images/类目/产品/ 目录）
+      // 主图命名 z1.jpg ~ z8.jpg（1:1），A+ 命名 a1.jpg（970*600 或 1460*600）
+      // gap: 'seamless' 无缝 / 'gapped' 有缝；主图/A+ 均可放视频(.mp4)
+      function mediaSrc(folder, file) {
+        return encodeURI('images/' + folder + file);
+      }
+      const workData = {
+        'work1': {
+          title: '美白霜主图设计',
+          category: '美妆',
+          folder: '美妆/美白霜/',
+          main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg','z8.jpg'],
+          aplus: {
+            gap: 'seamless',
+            images: [
+              { file: 'a1.jpg', width: 970, height: 600 },
+              { file: 'a2.jpg', width: 1460, height: 600 },
+              { file: 'a3.jpg', width: 970, height: 600 }
+            ]
+          },
+          desc: '为美妆品牌打造的高转化主图，精准还原膏体质感与光泽，配合场景化构图提升点击率。'
+        },
+        'work2': {
+          title: '口红主图视频',
+          category: '美妆',
+          folder: '美妆/口红/',
+          main: ['z1.jpg','z2.jpg','video-1.mp4','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg'],
+          aplus: {
+            gap: 'gapped',
+            images: [
+              { file: 'a1.jpg', width: 1460, height: 600 },
+              { file: 'a-video-1.mp4', width: 1460, height: 600 },
+              { file: 'a2.jpg', width: 970, height: 600 }
+            ]
+          },
+          desc: '动态展示口红质地与色彩饱和度，特写镜头配合节奏剪辑，增强视觉吸引力。'
+        },
+        'work3': {
+          title: '智能家居主图',
+          category: '3D渲染',
+          folder: '3D渲染/智能家居/',
+          main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg','z8.jpg'],
+          aplus: {
+            gap: 'seamless',
+            images: [
+              { file: 'a1.jpg', width: 970, height: 600 },
+              { file: 'a2.jpg', width: 970, height: 600 }
+            ]
+          },
+          desc: '3D 建模渲染呈现智能家居产品质感与细节，配合场景化构图提升点击率。'
+        },
+        'work4': {
+          title: '个护健康 A+ 页面',
+          category: 'A+页面',
+          folder: 'A+页面/个护健康/',
+          main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg'],
+          aplus: {
+            gap: 'gapped',
+            images: [
+              { file: 'a1.jpg', width: 1460, height: 600 },
+              { file: 'a2.jpg', width: 1460, height: 600 }
+            ]
+          },
+          desc: '品牌视觉体系下的 A+ 详情页设计，卖点提炼与场景化展示相结合，提升页面转化效果。'
+        },
+        'work5': {
+          title: '户外装备产品建模',
+          category: '产品建模',
+          folder: '产品建模/户外装备/',
+          main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg','z8.jpg'],
+          aplus: {
+            gap: 'seamless',
+            images: [
+              { file: 'a1.jpg', width: 970, height: 600 },
+              { file: 'a2.jpg', width: 970, height: 600 }
+            ]
+          },
+          desc: '高精度产品建模与材质还原，多角度场景渲染展示产品功能与使用场景。'
+        },
+        'work6': {
+          title: '母婴用品品牌视觉',
+          category: '品牌视觉',
+          folder: '品牌视觉/母婴用品/',
+          main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg'],
+          aplus: {
+            gap: 'gapped',
+            images: [
+              { file: 'a1.jpg', width: 1460, height: 600 },
+              { file: 'a2.jpg', width: 970, height: 600 },
+              { file: 'a3.jpg', width: 1460, height: 600 }
+            ]
+          },
+          desc: 'VI 规范制定与包装设计，统一品牌视觉语言，建立专业可信赖的品牌形象。'
+        }
+      };
+
+      const overlay = document.getElementById('work-detail-overlay');
+
+      // 创建媒体元素（自动识别图片 / 视频）
+      function createMedia(src, alt, options) {
+        options = options || {};
+        const ext = src.split('.').pop().split('?')[0].toLowerCase();
+        const isVideo = ['mp4', 'webm', 'mov', 'm4v', 'ogg'].includes(ext);
+        let el;
+        if (isVideo) {
+          el = document.createElement('video');
+          el.src = src;
+          el.controls = true;
+          el.preload = 'metadata';
+          el.loop = true;
+          el.muted = true;
+          el.playsInline = true;
+        } else {
+          el = document.createElement('img');
+          el.src = src;
+          el.alt = alt || '';
+          el.loading = 'lazy';
+        }
+        el.onerror = function() {
+          const ph = document.createElement('div');
+          ph.className = options.placeholderClass || 'work-detail-placeholder';
+          ph.style.cssText = options.placeholderStyle || '';
+          ph.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>请将图片放到 images 文件夹<br/>文件名：' + src.split('/').pop() + '</p>';
+          el.replaceWith(ph);
+        };
+        return el;
+      }
+
+      // 构建主图画廊（1:1 主图 + 缩略图 + 箭头切换）
+      function buildGallery(data) {
+        const gallery = document.createElement('div');
+        gallery.className = 'wd-gallery';
+
+        const label = document.createElement('div');
+        label.className = 'work-detail-section-label';
+        label.textContent = '主图';
+        gallery.appendChild(label);
+
+        let currentIndex = 0;
+
+        const mainWrap = document.createElement('div');
+        mainWrap.className = 'wd-main-image-wrap';
+        gallery.appendChild(mainWrap);
+
+        const counter = document.createElement('div');
+        counter.className = 'wd-gallery-counter';
+        counter.id = 'wd-gallery-counter';
+        counter.textContent = '1 / ' + data.mainImages.length;
+        gallery.appendChild(counter);
+
+        const nav = document.createElement('div');
+        nav.className = 'wd-gallery-nav';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'wd-gallery-arrow';
+        prevBtn.type = 'button';
+        prevBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>';
+        prevBtn.addEventListener('click', () => setImage(currentIndex - 1));
+        nav.appendChild(prevBtn);
+
+        const thumbs = [];
+        data.mainImages.forEach((src, i) => {
+          const thumb = document.createElement('button');
+          thumb.className = 'wd-gallery-thumb' + (i === 0 ? ' active' : '');
+          thumb.type = 'button';
+          const timg = createMedia(src, '缩略图 ' + (i + 1));
+          thumb.appendChild(timg);
+          thumb.addEventListener('click', () => setImage(i));
+          nav.appendChild(thumb);
+          thumbs.push(thumb);
+        });
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'wd-gallery-arrow';
+        nextBtn.type = 'button';
+        nextBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+        nextBtn.addEventListener('click', () => setImage(currentIndex + 1));
+        nav.appendChild(nextBtn);
+
+        gallery.appendChild(nav);
+
+        function setImage(index) {
+          const len = data.mainImages.length;
+          currentIndex = (index + len) % len;
+          mainWrap.innerHTML = '';
+          const m = createMedia(data.mainImages[currentIndex], data.title + ' - 主图');
+          m.id = 'wd-main-img';
+          m.style.objectFit = 'contain';
+          mainWrap.appendChild(m);
+          counter.textContent = (currentIndex + 1) + ' / ' + len;
+          thumbs.forEach((t, i) => t.classList.toggle('active', i === currentIndex));
+        }
+        setImage(0);
+
+        return gallery;
+      }
+
+      // 构建 A+ 内容区（970/1460 可选，有缝/无缝可选）
+      function buildAplus(data) {
+        const section = document.createElement('div');
+        section.className = 'wd-aplus-section';
+
+        const label = document.createElement('div');
+        label.className = 'work-detail-section-label';
+        label.textContent = 'A+ 详情内容';
+        section.appendChild(label);
+
+        const desc = document.createElement('p');
+        desc.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.7; margin-bottom: 24px; max-width: 600px;';
+        desc.textContent = data.desc;
+        section.appendChild(desc);
+
+        const gap = data.aplus.gap || 'seamless';
+        const grid = document.createElement('div');
+        grid.className = 'wd-aplus-grid' + (gap === 'gapped' ? ' gapped' : '');
+        section.appendChild(grid);
+
+        data.aplus.images.forEach((item, i) => {
+          const div = document.createElement('div');
+          div.className = 'wd-aplus-item' + (gap === 'gapped' ? ' gap-rounded' : '') + ' wd-aplus-size-' + item.width;
+          div.appendChild(createMedia(item.src, data.title + ' - A+内容 ' + (i + 1)));
+          grid.appendChild(div);
+        });
+
+        return section;
+      }
+
+      function openWorkDetail(workId) {
+        const d = workData[workId];
+        if (!d) return;
+        const detailData = {
+          title: d.title,
+          category: d.category,
+          desc: d.desc,
+          mainImages: d.main.map(f => mediaSrc(d.folder, f)),
+          aplus: {
+            gap: d.aplus.gap,
+            images: d.aplus.images.map(a => ({ src: mediaSrc(d.folder, a.file), width: a.width, height: a.height }))
+          }
+        };
+        document.getElementById('wd-title').textContent = detailData.title;
+        document.getElementById('wd-category').textContent = detailData.category;
+
+        const main = document.getElementById('wd-main');
+        main.innerHTML = '';
+
+        main.appendChild(buildGallery(detailData));
+        main.appendChild(buildAplus(detailData));
+
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        overlay.scrollTop = 0;
+      }
+
+      function closeWorkDetail() {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      // 给每个作品卡添加点击事件
+      document.querySelectorAll('.work-card').forEach((card, i) => {
+        card.addEventListener('click', () => openWorkDetail('work' + (i + 1)));
+      });
+
+      // 关闭按钮
+      const closeBtn = document.getElementById('wd-close');
+      if (closeBtn) closeBtn.addEventListener('click', closeWorkDetail);
+
+      // 按 ESC 关闭
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+          closeWorkDetail();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

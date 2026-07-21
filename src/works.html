@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作品集 — YOUCAI 亚马逊电商设计师</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #d4a857;
+      --gold-light: #f0d089;
+      --gold-dark: #c98a3b;
+      --bg: #0a0a0a;
+      --bg-card: #141414;
+      --bg-card-hover: #1a1a1a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: #f5f5f5;
+      font-family: 'Inter', 'Noto Serif SC', sans-serif;
+      overflow-x: hidden;
+    }
+    .font-serif { font-family: 'Noto Serif SC', serif; }
+
+    /* ========== Background ========== */
+    .bg-bokeh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bokeh-orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12;
+    }
+    .orb-1 { width: 500px; height: 500px; background: #d4a857; top: -10%; right: -5%; }
+    .orb-2 { width: 400px; height: 400px; background: #c98a3b; bottom: 10%; left: -8%; }
+    .orb-3 { width: 300px; height: 300px; background: #f0d089; top: 40%; left: 50%; opacity: 0.06; }
+    .vignette {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+    }
+
+    /* ========== Header ========== */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 10, 0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.5); font-size: 14px;
+      transition: color 0.3s;
+    }
+    .back-link:hover { color: var(--gold-light); }
+
+    /* ========== Title section ========== */
+    .title-section {
+      position: relative; z-index: 10;
+      text-align: center;
+      padding: 80px 24px 40px;
+    }
+    .title-section h1 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .title-section h1 .accent {
+      background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .title-section p {
+      color: rgba(255,255,255,0.4); font-size: 15px; max-width: 480px; margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ========== Filter bar ========== */
+    .filter-bar {
+      position: relative; z-index: 10;
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 10px; padding: 0 24px 48px;
+    }
+    .filter-pill {
+      padding: 8px 22px;
+      border-radius: 999px;
+      font-size: 13px; font-weight: 500;
+      letter-spacing: 0.03em;
+      color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+    }
+    .filter-pill:hover {
+      color: rgba(255,255,255,0.8);
+      border-color: rgba(212,168,87,0.3);
+      background: rgba(212,168,87,0.06);
+    }
+    .filter-pill.active {
+      color: #0a0a0a;
+      background: linear-gradient(135deg, #f0d089, #d4a857);
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(212,168,87,0.3);
+    }
+    .filter-count {
+      font-size: 11px; opacity: 0.6; margin-left: 4px;
+    }
+
+    /* ========== Works grid ========== */
+    .works-grid {
+      position: relative; z-index: 10;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 24px 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .work-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+      transform: translateY(30px);
+      animation: cardIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .work-card:hover {
+      border-color: rgba(212,168,87,0.3);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,168,87,0.1);
+      transform: translateY(-4px);
+    }
+    .work-card.hidden {
+      display: none;
+    }
+    @keyframes cardIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .work-card-thumb {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #0f0f0f;
+    }
+    .work-card-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .work-card:hover .work-card-thumb img {
+      transform: scale(1.06);
+    }
+    .work-card-thumb::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.7) 100%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .work-card:hover .work-card-thumb::after {
+      opacity: 1;
+    }
+    .work-card-badge {
+      position: absolute; top: 14px; left: 14px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--gold-light);
+      background: rgba(10,10,10,0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212,168,87,0.25);
+    }
+    .work-card-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 20px;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .work-card:hover .work-card-overlay {
+      transform: translateY(0);
+    }
+    .work-card-overlay .view-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--gold-light); font-size: 13px; font-weight: 500;
+    }
+    .work-card-info {
+      padding: 18px 20px;
+    }
+    .work-card-info h3 {
+      font-size: 16px; font-weight: 600; color: #f5f5f5;
+      margin-bottom: 4px;
+    }
+    .work-card-info p {
+      font-size: 12px; color: rgba(255,255,255,0.35);
+      letter-spacing: 0.03em;
+    }
+
+    /* ========== Empty state ========== */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center; padding: 80px 20px;
+      color: rgba(255,255,255,0.25);
+    }
+    .empty-state svg { margin: 0 auto 16px; opacity: 0.3; }
+
+    /* ========== Detail overlay ========== */
+    .detail-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: #0a0a0a;
+      overflow-y: auto;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .detail-overlay.active {
+      opacity: 1; pointer-events: auto;
+    }
+    .detail-header {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px;
+      background: rgba(10,10,10,0.88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .detail-header-title {
+      font-size: 14px; color: var(--gold-light); font-weight: 500;
+    }
+    .detail-nav {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .detail-nav-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #f5f5f5; cursor: pointer;
+      transition: all 0.3s;
+    }
+    .detail-nav-btn:hover {
+      background: rgba(212,168,87,0.15);
+      color: var(--gold-light);
+      border-color: rgba(212,168,87,0.3);
+    }
+    .detail-nav-btn:disabled {
+      opacity: 0.25; cursor: not-allowed;
+    }
+    .detail-close {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #f5f5f5; cursor: pointer;
+      transition: all 0.3s; margin-left: 6px;
+    }
+    .detail-close:hover {
+      background: rgba(239,68,68,0.15);
+      border-color: rgba(239,68,68,0.3);
+      color: #f87171;
+    }
+    .detail-body {
+      max-width: 900px; margin: 0 auto;
+      padding: 40px 20px 100px;
+    }
+
+    /* Gallery (main images) */
+    .gallery-main {
+      width: 100%; aspect-ratio: 1 / 1;
+      border-radius: 16px; overflow: hidden;
+      background: #141414;
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .gallery-main img {
+      width: 100%; height: 100%; object-fit: contain;
+    }
+    .gallery-thumbs {
+      display: flex; gap: 10px; margin-top: 14px;
+      overflow-x: auto; padding-bottom: 4px;
+      scrollbar-width: thin; scrollbar-color: rgba(212,168,87,0.3) transparent;
+    }
+    .gallery-thumbs::-webkit-scrollbar { height: 4px; }
+    .gallery-thumbs::-webkit-scrollbar-thumb { background: rgba(212,168,87,0.3); border-radius: 2px; }
+    .gallery-thumb {
+      width: 56px; height: 56px; border-radius: 10px;
+      overflow: hidden; border: 2px solid transparent;
+      cursor: pointer; flex-shrink: 0; background: #141414;
+      transition: border-color 0.3s;
+    }
+    .gallery-thumb:hover { border-color: rgba(212,168,87,0.4); }
+    .gallery-thumb.active { border-color: var(--gold); }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-counter {
+      position: absolute; bottom: 12px; right: 14px;
+      padding: 4px 12px; border-radius: 999px;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+      font-size: 12px; color: rgba(255,255,255,0.6);
+      pointer-events: none;
+    }
+
+    /* Section labels */
+    .detail-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 0.25em;
+      color: rgba(212,168,87,0.6); text-transform: uppercase;
+      margin: 48px 0 16px;
+    }
+    .detail-label::before {
+      content: ''; width: 24px; height: 1px;
+      background: rgba(212,168,87,0.3);
+    }
+    .detail-desc {
+      color: rgba(255,255,255,0.5); font-size: 14px;
+      line-height: 1.8; max-width: 600px; margin-bottom: 28px;
+    }
+
+    /* A+ section */
+    .aplus-container { width: 100%; }
+    .aplus-container.gapped { display: flex; flex-direction: column; gap: 16px; }
+    .aplus-item {
+      width: 100%; display: flex; justify-content: center;
+      overflow: hidden; background: #141414; line-height: 0;
+    }
+    .aplus-item.gapped { border-radius: 12px; }
+    .aplus-item img { width: 100%; height: auto; display: block; }
+    .aplus-size-970 { max-width: 970px; margin: 0 auto; }
+    .aplus-size-1460 { max-width: 1460px; margin: 0 auto; }
+
+    /* Image placeholder */
+    .img-placeholder {
+      width: 100%; aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 10px;
+      color: rgba(212,168,87,0.3);
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px dashed rgba(212,168,87,0.15);
+      border-radius: 12px;
+    }
+    .img-placeholder p {
+      font-size: 12px; text-align: center; padding: 0 20px; line-height: 1.6;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .works-grid { grid-template-columns: 1fr; gap: 16px; }
+      .title-section { padding: 48px 20px 24px; }
+      .filter-bar { gap: 8px; padding-bottom: 32px; }
+      .filter-pill { padding: 7px 16px; font-size: 12px; }
+      .detail-body { padding: 24px 16px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg-bokeh">
+    <div class="bokeh-orb orb-1"></div>
+    <div class="bokeh-orb orb-2"></div>
+    <div class="bokeh-orb orb-3"></div>
+  </div>
+  <div class="vignette"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="back-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        返回首页
+      </a>
+      <span class="font-bold text-lg tracking-[0.2em] text-white">YOUCAI</span>
+    </div>
+  </header>
+
+  <!-- Title -->
+  <section class="title-section">
+    <h1>作品<span class="accent">集</span></h1>
+    <p>3D 渲染 · A+ 页面 · 产品建模 · 品牌视觉<br/>每一件作品都是对极致视觉的追求</p>
+  </section>
+
+  <!-- Filter -->
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <!-- Grid -->
+  <div class="works-grid" id="works-grid"></div>
+
+  <!-- Detail overlay -->
+  <div class="detail-overlay" id="detail-overlay">
+    <div class="detail-header">
+      <span class="detail-header-title" id="detail-title">作品标题</span>
+      <div class="detail-nav">
+        <button class="detail-nav-btn" id="detail-prev" title="上一个作品">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="detail-nav-btn" id="detail-next" title="下一个作品">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+        <button class="detail-close" id="detail-close" title="关闭 (ESC)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+
+  <script>
+    // ============================================
+    // 作品数据 — 在这里添加/修改你的作品
+    // ============================================
+    // 图片放在 images/works/作品文件夹/ 下
+    // 主图命名: main-1.jpg, main-2.jpg, ... (1:1 比例)
+    // A+命名:  a1.jpg, a2.jpg, ... (970x600 或 1460x600)
+    //
+    const works = [
+      {
+        title: '美白霜主图设计',
+        category: '美妆',
+        tags: '产品精修 · 质感特写 · 主图合成',
+        desc: '为美妆品牌打造的高转化主图，精准还原膏体质感与光泽，配合场景化构图提升点击率。',
+        folder: '美妆/美白霜/',
+        main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg','z8.jpg'],
+        aplus: {
+          mode: 'seamless',
+          images: [
+            { file: 'a1.jpg', width: 970 },
+            { file: 'a2.jpg', width: 1460 },
+            { file: 'a3.jpg', width: 970 },
+          ]
+        }
+      },
+      {
+        title: '口红主图视频',
+        category: '美妆',
+        tags: '动态展示 · 色彩还原 · 节奏剪辑',
+        desc: '动态展示口红质地与色彩饱和度，特写镜头配合节奏剪辑，增强视觉吸引力。',
+        folder: '美妆/口红/',
+        main: ['z1.jpg','z2.jpg','video-1.mp4','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg'],
+        aplus: {
+          mode: 'gapped',
+          images: [
+            { file: 'a1.jpg', width: 1460 },
+            { file: 'a-video-1.mp4', width: 1460 },
+            { file: 'a2.jpg', width: 970 },
+          ]
+        }
+      },
+      {
+        title: '智能家居主图',
+        category: '3D渲染',
+        tags: '3D建模 · 产品渲染 · 场景合成',
+        desc: '3D 建模渲染呈现智能家居产品质感与细节，配合场景化构图提升点击率。',
+        folder: '3D渲染/智能家居/',
+        main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg','z8.jpg'],
+        aplus: {
+          mode: 'seamless',
+          images: [
+            { file: 'a1.jpg', width: 970 },
+            { file: 'a2.jpg', width: 970 },
+          ]
+        }
+      },
+      {
+        title: '个护健康 A+ 页面',
+        category: 'A+页面',
+        tags: '品牌视觉 · 详情页 · 卖点提炼',
+        desc: '品牌视觉体系下的 A+ 详情页设计，卖点提炼与场景化展示相结合，提升页面转化效果。',
+        folder: 'A+页面/个护健康/',
+        main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg'],
+        aplus: {
+          mode: 'gapped',
+          images: [
+            { file: 'a1.jpg', width: 1460 },
+            { file: 'a2.jpg', width: 1460 },
+          ]
+        }
+      },
+      {
+        title: '户外装备产品建模',
+        category: '产品建模',
+        tags: '高精度建模 · 材质还原 · 场景渲染',
+        desc: '高精度产品建模与材质还原，多角度场景渲染展示产品功能与使用场景。',
+        folder: '产品建模/户外装备/',
+        main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg','z8.jpg'],
+        aplus: {
+          mode: 'seamless',
+          images: [
+            { file: 'a1.jpg', width: 970 },
+            { file: 'a2.jpg', width: 970 },
+          ]
+        }
+      },
+      {
+        title: '母婴用品品牌视觉',
+        category: '品牌视觉',
+        tags: 'VI 规范 · 包装设计 · 视觉统一',
+        desc: 'VI 规范制定与包装设计，统一品牌视觉语言，建立专业可信赖的品牌形象。',
+        folder: '品牌视觉/母婴用品/',
+        main: ['z1.jpg','z2.jpg','z3.jpg','z4.jpg','z5.jpg','z6.jpg','z7.jpg'],
+        aplus: {
+          mode: 'gapped',
+          images: [
+            { file: 'a1.jpg', width: 1460 },
+            { file: 'a2.jpg', width: 970 },
+            { file: 'a3.jpg', width: 1460 },
+          ]
+        }
+      },
+      // ← 在这里继续添加更多作品，复制上面的格式即可
+      // folder 填 类目/产品名/ 这样的中文路径；main 里图片(z1.jpg)和视频(video-1.mp4)可混排
+    ];
+
+    // ============================================
+    // 渲染逻辑
+    // ============================================
+    const grid = document.getElementById('works-grid');
+    const filterBar = document.getElementById('filter-bar');
+    let currentFilter = '全部';
+    let currentDetailIndex = 0;
+
+    // 获取所有分类
+    const categories = ['全部', ...new Set(works.map(w => w.category))];
+
+    // 渲染筛选栏
+    function renderFilters() {
+      filterBar.innerHTML = categories.map(cat => {
+        const count = cat === '全部' ? works.length : works.filter(w => w.category === cat).length;
+        return `<button class="filter-pill ${cat === currentFilter ? 'active' : ''}" data-cat="${cat}">
+          ${cat}<span class="filter-count">${count}</span>
+        </button>`;
+      }).join('');
+
+      filterBar.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          currentFilter = pill.dataset.cat;
+          filterBar.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          renderGrid();
+        });
+      });
+    }
+
+    // 创建图片元素（带加载失败占位）
+    function createImg(src, alt, placeholderText) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = alt || '';
+      img.loading = 'lazy';
+      img.onerror = function() {
+        const ph = document.createElement('div');
+        ph.className = 'img-placeholder';
+        ph.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+          + '<p>' + (placeholderText || ('请放置图片: ' + src.split('/').pop())) + '</p>';
+        img.replaceWith(ph);
+      };
+      return img;
+    }
+
+    // 创建媒体元素（自动识别图片 / 视频）
+    function createMedia(src, alt, placeholderText, opts) {
+      opts = opts || {};
+      const ext = src.split('.').pop().toLowerCase();
+      const isVideo = ['mp4', 'webm', 'mov', 'm4v', 'ogg'].includes(ext);
+      let el;
+      if (isVideo) {
+        el = document.createElement('video');
+        el.src = src;
+        el.controls = true;
+        el.preload = 'metadata';
+        el.loop = true;
+        el.muted = true;
+        el.playsInline = true;
+        if (opts.objectFit) el.style.objectFit = opts.objectFit;
+      } else {
+        el = document.createElement('img');
+        el.src = src;
+        el.alt = alt || '';
+        el.loading = 'lazy';
+        if (opts.objectFit) el.style.objectFit = opts.objectFit;
+      }
+      el.onerror = function() {
+        const ph = document.createElement('div');
+        ph.className = 'img-placeholder';
+        ph.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+          + '<p>' + (placeholderText || ('请放置文件: ' + src.split('/').pop())) + '</p>';
+        el.replaceWith(ph);
+      };
+      return el;
+    }
+
+    // 拼接媒体路径并编码中文（兼容 Vercel 部署的中文目录）
+    function mediaSrc(folder, file) {
+      return encodeURI('images/' + folder + file);
+    }
+
+    // 渲染作品网格
+    function renderGrid() {
+      const filtered = currentFilter === '全部'
+        ? works
+        : works.filter(w => w.category === currentFilter);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="empty-state">'
+          + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+          + '<p>该分类下暂无作品</p></div>';
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach((work, i) => {
+        const realIndex = works.indexOf(work);
+        const card = document.createElement('div');
+        card.className = 'work-card';
+        card.style.animationDelay = (i * 0.08) + 's';
+        card.dataset.index = realIndex;
+
+        const thumb = document.createElement('div');
+        thumb.className = 'work-card-thumb';
+
+        const firstImg = (work.main || []).find(f => !f.match(/\.(mp4|webm|mov|m4v|ogg)$/i)) || 'z1.jpg';
+        const coverSrc = mediaSrc(work.folder, firstImg);
+        const coverImg = createMedia(coverSrc, work.title, '放主图: ' + firstImg);
+        thumb.appendChild(coverImg);
+
+        const badge = document.createElement('span');
+        badge.className = 'work-card-badge';
+        badge.textContent = work.category;
+        thumb.appendChild(badge);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'work-card-overlay';
+        overlay.innerHTML = '<span class="view-btn">查看作品 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>';
+        thumb.appendChild(overlay);
+
+        card.appendChild(thumb);
+
+        const info = document.createElement('div');
+        info.className = 'work-card-info';
+        info.innerHTML = '<h3>' + work.title + '</h3><p>' + work.tags + '</p>';
+        card.appendChild(info);
+
+        card.addEventListener('click', () => openDetail(realIndex));
+        grid.appendChild(card);
+      });
+    }
+
+    // ============================================
+    // 作品详情
+    // ============================================
+    const overlay = document.getElementById('detail-overlay');
+    const detailBody = document.getElementById('detail-body');
+    const detailTitle = document.getElementById('detail-title');
+
+    function openDetail(index) {
+      currentDetailIndex = index;
+      renderDetail();
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      overlay.scrollTop = 0;
+    }
+
+    function closeDetail() {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function renderDetail() {
+      const work = works[currentDetailIndex];
+      if (!work) return;
+
+      detailTitle.textContent = work.title + ' — ' + work.category;
+
+      // 更新上一个/下一个按钮状态
+      document.getElementById('detail-prev').disabled = currentDetailIndex <= 0;
+      document.getElementById('detail-next').disabled = currentDetailIndex >= works.length - 1;
+
+      let html = '';
+
+      // 主图画廊
+      html += '<div class="gallery-main" id="gallery-main"></div>';
+      html += '<div class="gallery-thumbs" id="gallery-thumbs"></div>';
+
+      // A+ 标签
+      html += '<div class="detail-label">A+ 详情内容</div>';
+      html += '<p class="detail-desc">' + work.desc + '</p>';
+
+      // A+ 图片
+      const aplusClass = work.aplus.mode === 'gapped' ? 'gapped' : '';
+      const itemClass = work.aplus.mode === 'gapped' ? 'aplus-item gapped' : 'aplus-item';
+      html += '<div class="aplus-container ' + aplusClass + '">';
+      work.aplus.images.forEach((a, i) => {
+        const sizeClass = a.width === 1460 ? 'aplus-size-1460' : 'aplus-size-970';
+        html += '<div class="' + itemClass + ' ' + sizeClass + '" id="aplus-' + i + '"></div>';
+      });
+      html += '</div>';
+
+      detailBody.innerHTML = html;
+
+      // 填充主图画廊
+      const galleryMain = document.getElementById('gallery-main');
+      const galleryThumbs = document.getElementById('gallery-thumbs');
+      let currentImg = 0;
+      const mainMedia = work.main || [];
+
+      // 渲染主图
+      function showMain(idx) {
+        currentImg = idx;
+        galleryMain.innerHTML = '';
+        const media = createMedia(mediaSrc(work.folder, mainMedia[idx]), work.title + ' 主图 ' + (idx + 1), '放媒体: ' + mainMedia[idx], { objectFit: 'contain' });
+        galleryMain.appendChild(media);
+
+        const counter = document.createElement('div');
+        counter.className = 'gallery-counter';
+        counter.textContent = (idx + 1) + ' / ' + mainMedia.length;
+        galleryMain.appendChild(counter);
+
+        // 更新缩略图选中态
+        galleryThumbs.querySelectorAll('.gallery-thumb').forEach((t, i) => {
+          t.classList.toggle('active', i === idx);
+        });
+      }
+
+      // 渲染缩略图
+      mainMedia.forEach((f, i) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'gallery-thumb' + (i === 0 ? ' active' : '');
+        const media = createMedia(mediaSrc(work.folder, f), '缩略图 ' + (i + 1));
+        thumb.appendChild(media);
+        thumb.addEventListener('click', () => showMain(i));
+        galleryThumbs.appendChild(thumb);
+      });
+
+      showMain(0);
+
+      // 填充 A+ 图片 / 视频
+      work.aplus.images.forEach((a, i) => {
+        const container = document.getElementById('aplus-' + i);
+        if (container) {
+          const media = createMedia(mediaSrc(work.folder, a.file), work.title + ' A+ ' + (i + 1), '放A+文件: ' + a.file);
+          container.appendChild(media);
+        }
+      });
+    }
+
+    // 事件绑定
+    document.getElementById('detail-close').addEventListener('click', closeDetail);
+    document.getElementById('detail-prev').addEventListener('click', () => {
+      if (currentDetailIndex > 0) { currentDetailIndex--; renderDetail(); overlay.scrollTop = 0; }
+    });
+    document.getElementById('detail-next').addEventListener('click', () => {
+      if (currentDetailIndex < works.length - 1) { currentDetailIndex++; renderDetail(); overlay.scrollTop = 0; }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') closeDetail();
+      if (e.key === 'ArrowLeft' && currentDetailIndex > 0) { currentDetailIndex--; renderDetail(); overlay.scrollTop = 0; }
+      if (e.key === 'ArrowRight' && currentDetailIndex < works.length - 1) { currentDetailIndex++; renderDetail(); overlay.scrollTop = 0; }
+    });
+
+    // 初始化
+    renderFilters();
+    renderGrid();
+  </script>
+</body>
+</html>
