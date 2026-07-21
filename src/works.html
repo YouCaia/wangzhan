@@ -360,9 +360,64 @@
       .filter-pill { padding: 7px 16px; font-size: 12px; }
       .detail-body { padding: 24px 16px 80px; }
     }
+
+    /* ========== Edit Mode ========== */
+    body.edit-mode [data-edit] {
+      outline: 1px dashed rgba(212,168,87,0.5);
+      outline-offset: 2px;
+      cursor: text;
+      border-radius: 4px;
+    }
+    body.edit-mode [data-edit]:hover { background: rgba(212,168,87,0.08); }
+    body.edit-mode [data-edit]:focus { outline: 2px solid var(--gold); background: rgba(212,168,87,0.12); }
+    .edit-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9900;
+      display: none; align-items: center; justify-content: space-between;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+      border-bottom: 1px solid rgba(212,168,87,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); font-size: 13px;
+    }
+    .edit-toolbar.active { display: flex; }
+    .edit-toolbar .edit-info { color: #e8b864; display: flex; align-items: center; gap: 8px; }
+    .edit-toolbar .edit-actions { display: flex; align-items: center; gap: 10px; }
+    .edit-toolbar button {
+      padding: 6px 18px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .edit-toolbar .btn-save { background: linear-gradient(135deg, #d4a857, #c98a3b); color: #1a1205; }
+    .edit-toolbar .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,87,0.4); }
+    .edit-toolbar .btn-export { background: rgba(212,168,87,0.15); color: #e8b864; border: 1px solid rgba(212,168,87,0.4); }
+    .edit-toolbar .btn-export:hover { background: rgba(212,168,87,0.28); }
+    .edit-toolbar .btn-exit { background: rgba(255,255,255,0.08); color: #f5f5f5; border: 1px solid rgba(255,255,255,0.15); }
+    .edit-toolbar .btn-exit:hover { background: rgba(255,255,255,0.15); }
+    .edit-hint {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 9900; display: none; padding: 8px 20px;
+      background: rgba(10,10,10,0.9); border: 1px solid rgba(212,168,87,0.3);
+      border-radius: 999px; color: #e8b864; font-size: 12px; backdrop-filter: blur(10px);
+    }
+    .edit-hint.active { display: block; }
   </style>
 </head>
 <body>
+
+  <!-- Edit Toolbar -->
+  <div id="edit-toolbar" class="edit-toolbar">
+    <div class="edit-info">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      <span>编辑模式已开启 — 点击文字直接修改</span>
+    </div>
+    <div class="edit-actions">
+      <button class="btn-save">💾 保存(本地)</button>
+      <button class="btn-export">⬇ 导出修改</button>
+      <button class="btn-exit">退出编辑</button>
+    </div>
+  </div>
+  <div id="edit-hint" class="edit-hint">点击文字直接修改 · 保存=本机预览 · 导出修改=下载真正改好的HTML文件，发给我提交即可上线</div>
 
   <!-- Background -->
   <div class="bg-bokeh">
@@ -388,8 +443,8 @@
 
   <!-- Title -->
   <section class="title-section">
-    <h1>作品<span class="accent">集</span></h1>
-    <p>3D 渲染 · A+ 页面 · 产品建模 · 品牌视觉<br/>每一件作品都是对极致视觉的追求</p>
+    <h1 data-edit="works-page-title">作品<span class="accent">集</span></h1>
+    <p data-edit="works-page-sub">3D 渲染 · A+ 页面 · 产品建模 · 品牌视觉<br/>每一件作品都是对极致视觉的追求</p>
   </section>
 
   <!-- Filter -->
@@ -555,6 +610,28 @@
     ];
 
     // ============================================
+    // 编辑覆盖：localStorage(实时预览) + 文件内联 __EDIT_OVERRIDES__
+    // ============================================
+    window.getOverride = function(key, fallback) {
+      try {
+        const ls = JSON.parse(localStorage.getItem('youcai_edits') || '{}');
+        if (ls[key] != null) return ls[key];
+      } catch(e) {}
+      if (window.__EDIT_OVERRIDES__ && window.__EDIT_OVERRIDES__[key] != null) return window.__EDIT_OVERRIDES__[key];
+      return fallback;
+    };
+    window.applyEditOverrides = function() {
+      const map = {};
+      if (window.__EDIT_OVERRIDES__) Object.assign(map, window.__EDIT_OVERRIDES__);
+      try { Object.assign(map, JSON.parse(localStorage.getItem('youcai_edits') || '{}')); } catch(e) {}
+      Object.entries(map).forEach(([k, v]) => {
+        const sel = '[data-edit="' + (window.CSS && CSS.escape ? CSS.escape(k) : k) + '"]';
+        const el = document.querySelector(sel);
+        if (el) el.innerHTML = v;
+      });
+    };
+
+    // ============================================
     // 渲染逻辑
     // ============================================
     const grid = document.getElementById('works-grid');
@@ -706,7 +783,11 @@
 
         const info = document.createElement('div');
         info.className = 'work-card-info';
-        info.innerHTML = '<h3>' + folderName(work.folder) + '</h3><p>亚马逊电商视觉 · 主图设计 · A+ 详情页</p>';
+        const titleKey = 'work-title-' + realIndex;
+        const subKey = 'work-sub-' + realIndex;
+        const titleTxt = window.getOverride(titleKey, folderName(work.folder));
+        const subTxt = window.getOverride(subKey, '亚马逊电商视觉 · 主图设计 · A+ 详情页');
+        info.innerHTML = '<h3 data-edit="' + titleKey + '">' + titleTxt + '</h3><p data-edit="' + subKey + '">' + subTxt + '</p>';
         card.appendChild(info);
 
         card.addEventListener('click', () => openDetail(realIndex));
@@ -721,9 +802,10 @@
     const detailBody = document.getElementById('detail-body');
     const detailTitle = document.getElementById('detail-title');
 
-    function openDetail(index) {
+    async function openDetail(index) {
       currentDetailIndex = index;
-      renderDetail();
+      await renderDetail();
+      window.applyEditOverrides && window.applyEditOverrides();
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
       overlay.scrollTop = 0;
@@ -738,7 +820,9 @@
       const work = works[currentDetailIndex];
       if (!work) return;
 
-      detailTitle.textContent = folderName(work.folder) + ' — ' + work.category;
+      const dtKey = 'detail-title-' + currentDetailIndex;
+      detailTitle.dataset.edit = dtKey;
+      detailTitle.textContent = window.getOverride(dtKey, folderName(work.folder) + ' — ' + work.category);
 
       // 更新上一个/下一个按钮状态
       document.getElementById('detail-prev').disabled = currentDetailIndex <= 0;
@@ -917,6 +1001,99 @@
       if (e.key === 'ArrowLeft' && currentDetailIndex > 0) { currentDetailIndex--; renderDetail(); overlay.scrollTop = 0; }
       if (e.key === 'ArrowRight' && currentDetailIndex < works.length - 1) { currentDetailIndex++; renderDetail(); overlay.scrollTop = 0; }
     });
+
+    // ============================================
+    // Edit Mode (Ctrl+Shift+E 进入编辑) + 导出修改到代码文件
+    // ============================================
+    (function() {
+      const EDIT_PASSWORD = 'youcai2026';
+
+      function enterEditMode() {
+        const pwd = prompt('请输入编辑密码：');
+        if (pwd !== EDIT_PASSWORD) {
+          if (pwd !== null) alert('密码错误');
+          return;
+        }
+        document.body.classList.add('edit-mode');
+        document.querySelectorAll('[data-edit]').forEach(el => { el.contentEditable = true; });
+        document.getElementById('edit-toolbar').classList.add('active');
+        document.getElementById('edit-hint').classList.add('active');
+      }
+
+      function saveEdits() {
+        const edits = {};
+        document.querySelectorAll('[data-edit]').forEach(el => { edits[el.dataset.edit] = el.innerHTML; });
+        localStorage.setItem('youcai_edits', JSON.stringify(edits));
+        const btn = document.querySelector('.btn-save');
+        const orig = btn.textContent;
+        btn.textContent = '✓ 已保存(本地)';
+        btn.style.background = 'linear-gradient(135deg, #4ade80, #22c55e)';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+      }
+
+      function downloadText(text, filename) {
+        const blob = new Blob([text], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+
+      function exportEdits() {
+        const edits = {};
+        document.querySelectorAll('[data-edit]').forEach(el => { edits[el.dataset.edit] = el.innerHTML; });
+        if (!Object.keys(edits).length) { alert('当前页面没有可导出的编辑项'); return; }
+        const json = JSON.stringify(edits).replace(/</g, '\\u003c');
+        const inject = '<script>window.__EDIT_OVERRIDES__ = ' + json + ';<\/script>';
+        const filename = (location.pathname.split('/').pop() || 'works.html').split('?')[0];
+        const done = (src) => {
+          let out = src.replace(/<script>\s*window\.__EDIT_OVERRIDES__\s*=\s*[\s\S]*?<\/script>/gi, '');
+          if (/<\/head>/i.test(out)) out = out.replace(/<\/head>/i, inject + '\n</head>');
+          else out = inject + '\n' + out;
+          downloadText(out, filename);
+        };
+        fetch(location.href).then(r => r.text()).then(done).catch(() => {
+          const clone = document.cloneNode(true);
+          clone.body.classList.remove('edit-mode');
+          clone.querySelectorAll('[data-edit]').forEach(el => el.removeAttribute('contenteditable'));
+          const s = clone.createElement('script');
+          s.textContent = 'window.__EDIT_OVERRIDES__ = ' + json + ';';
+          clone.head.insertBefore(s, clone.head.firstChild);
+          downloadText('<!DOCTYPE html>\n' + clone.documentElement.outerHTML, filename);
+        });
+        const b = document.querySelector('.btn-export');
+        if (b) { const o = b.textContent; b.textContent = '⬇ 已导出'; setTimeout(() => { b.textContent = o; }, 1500); }
+      }
+
+      function exitEditMode() {
+        document.body.classList.remove('edit-mode');
+        document.querySelectorAll('[data-edit]').forEach(el => { el.contentEditable = false; });
+        document.getElementById('edit-toolbar').classList.remove('active');
+        document.getElementById('edit-hint').classList.remove('active');
+      }
+
+      function loadEdits() {
+        window.applyEditOverrides && window.applyEditOverrides();
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+          e.preventDefault();
+          if (document.body.classList.contains('edit-mode')) exitEditMode();
+          else enterEditMode();
+        }
+      });
+
+      const saveBtn = document.querySelector('.btn-save');
+      const exitBtn = document.querySelector('.btn-exit');
+      const exportBtn = document.querySelector('.btn-export');
+      if (saveBtn) saveBtn.addEventListener('click', saveEdits);
+      if (exitBtn) exitBtn.addEventListener('click', exitEditMode);
+      if (exportBtn) exportBtn.addEventListener('click', exportEdits);
+
+      loadEdits();
+    })();
 
     // 初始化
     renderFilters();
