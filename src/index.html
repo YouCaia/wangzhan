@@ -2538,6 +2538,16 @@
           if (delta < -threshold && currentIndex < data.mainImages.length - 1) setImage(currentIndex + 1);
           else if (delta > threshold && currentIndex > 0) setImage(currentIndex - 1);
           else setImage(currentIndex);
+          // 非滑动（点击/轻触）打开全屏查看器，绕过指针捕获吞掉 click 的问题
+          if (!pMoved && typeof openLightbox === 'function') {
+            const src = data.mainImages[currentIndex];
+            const imgIdx = data.mainImageUrls.indexOf(src);
+            if (imgIdx >= 0) {
+              recentSwipe = true;
+              setTimeout(() => { recentSwipe = false; }, 80);
+              openLightbox(data.lightboxUrls, imgIdx);
+            }
+          }
         };
         mainWrap.addEventListener('pointerup', endPointer);
         mainWrap.addEventListener('pointercancel', () => { pDragging = false; });

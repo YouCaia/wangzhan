@@ -866,6 +866,16 @@
           if (delta < -threshold && currentImg < mainMedia.length - 1) showMain(currentImg + 1);
           else if (delta > threshold && currentImg > 0) showMain(currentImg - 1);
           else showMain(currentImg);
+          // 非滑动（点击/轻触）打开全屏查看器，绕过指针捕获吞掉 click 的问题
+          if (!pMoved && typeof openLightbox === 'function') {
+            const f = mainMedia[currentImg];
+            const imgIdx = mainImageFiles.indexOf(f);
+            if (imgIdx >= 0) {
+              recentSwipe = true;
+              setTimeout(() => { recentSwipe = false; }, 80);
+              openLightbox(lightboxUrls, imgIdx);
+            }
+          }
         };
         galleryMain.addEventListener('pointerup', endPointer);
         galleryMain.addEventListener('pointercancel', () => { pDragging = false; });
