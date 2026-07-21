@@ -2511,35 +2511,36 @@
           thumbs.forEach((t, i) => t.classList.toggle('active', i === currentIndex));
         }
 
-        // touch swipe
-        let touchStartX = 0, currentX = 0, isSwiping = false;
-        mainWrap.addEventListener('touchstart', (e) => {
-          isSwiping = true;
-          touchStartX = e.touches[0].clientX;
-          currentX = touchStartX;
+        // 鼠标 + 触摸滑动切换（统一用 Pointer Events）
+        let pStartX = 0, pCurX = 0, pDragging = false, pMoved = false;
+        mainWrap.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          pDragging = true; pMoved = false;
+          pStartX = e.clientX; pCurX = e.clientX;
           track.style.transition = 'none';
-        }, { passive: true });
-        mainWrap.addEventListener('touchmove', (e) => {
-          if (!isSwiping) return;
-          currentX = e.touches[0].clientX;
-          const delta = currentX - touchStartX;
+          try { mainWrap.setPointerCapture(e.pointerId); } catch (_) {}
+        });
+        mainWrap.addEventListener('pointermove', (e) => {
+          if (!pDragging) return;
+          pCurX = e.clientX;
+          if (Math.abs(pCurX - pStartX) > 4) pMoved = true;
+          const delta = pCurX - pStartX;
           const base = -(currentIndex * (100 / data.mainImages.length));
           const pct = base + (delta / mainWrap.clientWidth) * (100 / data.mainImages.length);
           track.style.transform = 'translateX(' + pct + '%)';
-        }, { passive: true });
-        mainWrap.addEventListener('touchend', (e) => {
-          if (!isSwiping) return;
-          isSwiping = false;
-          const delta = currentX - touchStartX;
-          const threshold = mainWrap.clientWidth * 0.2;
-          if (Math.abs(delta) > 20) {
-            recentSwipe = true;
-            setTimeout(() => { recentSwipe = false; }, 60);
-          }
+        });
+        const endPointer = () => {
+          if (!pDragging) return;
+          pDragging = false;
+          const delta = pCurX - pStartX;
+          const threshold = mainWrap.clientWidth * 0.15;
+          if (pMoved) { recentSwipe = true; setTimeout(() => { recentSwipe = false; }, 80); }
           if (delta < -threshold && currentIndex < data.mainImages.length - 1) setImage(currentIndex + 1);
           else if (delta > threshold && currentIndex > 0) setImage(currentIndex - 1);
           else setImage(currentIndex);
-        }, { passive: true });
+        };
+        mainWrap.addEventListener('pointerup', endPointer);
+        mainWrap.addEventListener('pointercancel', () => { pDragging = false; });
 
         setImage(0);
 
@@ -2643,8 +2644,9 @@
       const closeBtn = document.getElementById('wd-close');
       if (closeBtn) closeBtn.addEventListener('click', closeWorkDetail);
 
-      // 按 ESC 关闭
+      // 按 ESC 关闭（全屏查看器打开时由 lightbox 优先处理）
       document.addEventListener('keydown', (e) => {
+        if (document.querySelector('.wb-lightbox.active')) return;
         if (e.key === 'Escape' && overlay.classList.contains('active')) {
           closeWorkDetail();
         }

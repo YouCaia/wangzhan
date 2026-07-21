@@ -11,7 +11,7 @@
     .wb-lightbox {
       position: fixed;
       inset: 0;
-      z-index: 9999;
+      z-index: 30000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -131,7 +131,7 @@
       .wb-lightbox-hint { font-size: 11px; }
     }
   `;
-  document.head.appendChild(style);
+  if (document.head) document.head.appendChild(style);
 
   // 创建 DOM
   const box = document.createElement('div');
@@ -147,7 +147,13 @@
     </div>
     <div class="wb-lightbox-hint">点击图片关闭 · 滚轮缩放 · 左右滑动切换</div>
   `;
-  document.body.appendChild(box);
+  // 兼容脚本放在 <head> 的情况：此时 document.body 尚不存在，延迟到 DOM 就绪再挂载
+  function mountBox() {
+    if (box.parentNode) return;
+    (document.body || document.documentElement).appendChild(box);
+  }
+  if (document.body) mountBox();
+  else document.addEventListener('DOMContentLoaded', mountBox);
 
   const img = box.querySelector('.wb-lightbox-img');
   const counter = box.querySelector('.wb-lightbox-counter');
