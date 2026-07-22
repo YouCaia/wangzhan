@@ -326,12 +326,13 @@
       line-height: 1.8; max-width: 600px; margin-bottom: 28px;
     }
 
-    /* A+ section */
-    .aplus-container { width: 100%; }
-    .aplus-container.gapped { display: flex; flex-direction: column; gap: 16px; }
+    /* A+ section（强无缝：容器始终 column-flex，gapped 才加 gap） */
+    .aplus-container { width: 100%; display: flex; flex-direction: column; }
+    .aplus-container.gapped { gap: 16px; }
     .aplus-item {
       width: 100%; display: flex; justify-content: center;
-      overflow: hidden; background: #141414; line-height: 0;
+      overflow: hidden; background: #141414; line-height: 0; font-size: 0;
+      margin: 0; padding: 0;
     }
     .aplus-item.gapped { border-radius: 12px; }
     .aplus-item img { width: 100%; height: auto; display: block; }
