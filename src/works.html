@@ -881,9 +881,8 @@
       html += '<div class="detail-label">A+ 详情内容</div>';
       html += '<p class="detail-desc">' + work.desc + '</p>';
 
-      // A+ 图片（只渲染真实存在的）
-      const aplusOk = await Promise.all((work.aplus.images || []).map(a => mediaExists(mediaSrc(work.folder, a.file))));
-      const aplusList = (work.aplus.images || []).filter((a, i) => aplusOk[i]);
+      // A+ 图片：直接渲染全部，缺失文件由 createMedia 的 onerror 自动隐藏（不再逐个探测，避免打开详情卡顿）
+      const aplusList = (work.aplus.images || []);
       const aplusClass = work.aplus.mode === 'gapped' ? 'gapped' : '';
       const itemClass = work.aplus.mode === 'gapped' ? 'aplus-item gapped' : 'aplus-item';
       html += '<div class="aplus-container ' + aplusClass + '">';
@@ -899,7 +898,7 @@
       const galleryMain = document.getElementById('gallery-main');
       const galleryThumbs = document.getElementById('gallery-thumbs');
       let currentImg = 0;
-      const mainMedia = await filterExisting(work.folder, work.main || []);
+      const mainMedia = (work.main || []).slice();
       const mainImageFiles = mainMedia.filter(f => !isVideoFile(f));
       const aplusImageFiles = aplusList.filter(a => !isVideoFile(a.file));
       const lightboxUrls = mainImageFiles.map(f => mediaSrc(work.folder, f))
