@@ -877,22 +877,15 @@
       html += '<div class="gallery-main" id="gallery-main"></div>';
       html += '<div class="gallery-thumbs" id="gallery-thumbs"></div>';
 
-      // A+ 标签
+      // A+ 标签（标签 + 描述）
       html += '<div class="detail-label">A+ 详情内容</div>';
       html += '<p class="detail-desc">' + work.desc + '</p>';
 
-      // A+ 图片：直接渲染全部，缺失文件由 createMedia 的 onerror 自动隐藏（不再逐个探测，避免打开详情卡顿）
-      const aplusList = (work.aplus.images || []);
-      const aplusClass = work.aplus.mode === 'gapped' ? 'gapped' : '';
-      const itemClass = work.aplus.mode === 'gapped' ? 'aplus-item gapped' : 'aplus-item';
-      html += '<div class="aplus-container ' + aplusClass + '">';
-      aplusList.forEach((a, i) => {
-        const sizeClass = a.width === 1460 ? 'aplus-size-1460' : 'aplus-size-970';
-        html += '<div class="' + itemClass + ' ' + sizeClass + '" id="aplus-' + i + '"></div>';
-      });
-      html += '</div>';
-
       detailBody.innerHTML = html;
+
+      // A+ 图片：调用 lightbox.js 共享函数渲染（与首页 100% 一致，杜绝"两边割裂"）
+      const aplusList = (work.aplus.images || []);
+      const aplusImagesForShared = aplusList.map(a => ({ src: mediaSrc(work.folder, a.file), width: a.width }));
 
       // 填充主图画廊
       const galleryMain = document.getElementById('gallery-main');
@@ -903,6 +896,24 @@
       const aplusImageFiles = aplusList.filter(a => !isVideoFile(a.file));
       const lightboxUrls = mainImageFiles.map(f => mediaSrc(work.folder, f))
         .concat(aplusImageFiles.map(a => mediaSrc(work.folder, a.file)));
+      const aplusImageUrls = aplusImageFiles.map(a => mediaSrc(work.folder, a.file));
+
+      // 渲染 A+ 段（共享函数，内联样式 + 父级防漏规则确保无缝）
+      const aplusEl = window.renderAplusSection({
+        images: aplusImagesForShared,
+        gap: work.aplus.mode || 'seamless',
+        title: '', // 标签已经在上方渲染
+        desc: '',
+        createMedia: createMedia,
+        // openLightbox 不传：共享函数会兜底用 window.openLightbox
+        aplusImageUrls: aplusImageUrls,
+        mainImageUrlsCount: mainImageFiles.length,
+        lightboxUrls: lightboxUrls,
+        altPrefix: folderName(work.folder) + ' A+内容'
+      });
+      // 共享函数会自己加 label/desc 节点为空时跳过；这里只把容器部分显示出来
+      // 简化处理：把共享函数返回的 section 整体 append
+      detailBody.appendChild(aplusEl);
 
       // 主图轨道（支持滑动切换 + 点击放大）
       galleryMain.innerHTML = '';
@@ -1011,21 +1022,7 @@
         showMain(0);
       }
 
-      // 填充 A+ 图片 / 视频（点击图片进 lightbox）
-      aplusList.forEach((a, i) => {
-        const container = document.getElementById('aplus-' + i);
-        if (container) {
-          const media = createMedia(mediaSrc(work.folder, a.file), folderName(work.folder) + ' A+ ' + (i + 1), '放A+文件: ' + a.file);
-          if (media.tagName === 'IMG') {
-            media.style.cursor = 'zoom-in';
-            media.addEventListener('click', () => {
-              const idx = mainImageFiles.length + aplusImageFiles.indexOf(a);
-              openLightbox(lightboxUrls, idx);
-            });
-          }
-          container.appendChild(media);
-        }
-      });
+      // A+ 段已由上面的 window.renderAplusSection 渲染（含图片元素 + 点击 lightbox 绑定），这里无需再处理
     }
 
     // 事件绑定

@@ -2593,52 +2593,20 @@ window.__EDIT_OVERRIDES__ = {
         return gallery;
       }
 
-      // 构建 A+ 内容区（970/1460 可选，有缝/无缝可选）
+      // 构建 A+ 内容区：调用 lightbox.js 共享函数（与作品页 100% 一致）
       function buildAplus(data) {
-        const section = document.createElement('div');
-        section.className = 'aplus-section';
-
-        if (!data.aplus.images || data.aplus.images.length === 0) {
-          const empty = document.createElement('div');
-          empty.className = 'wd-empty';
-          empty.textContent = '暂无 A+ 内容';
-          section.appendChild(empty);
-          return section;
-        }
-
-        const label = document.createElement('div');
-        label.className = 'work-detail-section-label';
-        label.textContent = 'A+ 详情内容';
-        section.appendChild(label);
-
-        const desc = document.createElement('p');
-        desc.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.7; margin-bottom: 24px; max-width: 600px;';
-        desc.textContent = data.desc;
-        section.appendChild(desc);
-
-        // 兼容首页(workData 用 gap)与作品页(works 用 mode)两种字段命名，默认无缝
-        const gap = data.aplus.gap || data.aplus.mode || 'seamless';
-        const grid = document.createElement('div');
-        grid.className = 'aplus-container' + (gap === 'gapped' ? ' gapped' : '');
-        if (gap !== 'gapped') grid.style.gap = '0'; // 内联保险，杜绝任何遗留间隙
-        section.appendChild(grid);
-
-        data.aplus.images.forEach((item, i) => {
-          const div = document.createElement('div');
-          div.className = 'aplus-item' + (gap === 'gapped' ? ' gapped' : '') + ' aplus-size-' + item.width;
-          const media = createMedia(item.src, data.title + ' - A+内容 ' + (i + 1));
-          if (media.tagName === 'IMG') {
-            media.style.cursor = 'zoom-in';
-            media.addEventListener('click', () => {
-              const idx = data.aplusImageUrls.indexOf(item.src);
-              if (idx >= 0 && data.lightboxUrls) openLightbox(data.lightboxUrls, data.mainImageUrls.length + idx);
-            });
-          }
-          div.appendChild(media);
-          grid.appendChild(div);
+        return window.renderAplusSection({
+          images: data.aplus.images,
+          gap: data.aplus.gap || data.aplus.mode || 'seamless',
+          title: 'A+ 详情内容',
+          desc: data.desc,
+          createMedia: createMedia,
+          // openLightbox 不传：共享函数会兜底用 window.openLightbox（避免 IIFE 作用域问题）
+          aplusImageUrls: data.aplusImageUrls,
+          mainImageUrlsCount: data.mainImageUrls.length,
+          lightboxUrls: data.lightboxUrls,
+          altPrefix: data.title + ' - A+内容'
         });
-
-        return section;
       }
 
       // ===== 首页精选作品：动态渲染 + 选择/随机配置 =====

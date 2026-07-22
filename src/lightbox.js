@@ -353,3 +353,138 @@
   window.openLightbox = open;
   window.closeLightbox = close;
 })();
+
+// === 共享：A+ 内容区渲染（首页 + 作品页 100% 共用同一个函数，物理上不可能产生不同结果）===
+(function () {
+  'use strict';
+
+  // 1) 注入最高优先级的 A+ 防漏样式（!important 覆盖 .work-detail-main img 等任何父级规则）
+  var STYLE_ID = 'youcai-aplus-bulletproof';
+  if (!document.getElementById(STYLE_ID)) {
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      '.aplus-section { margin-top: 48px; }',
+      '.aplus-container {',
+      '  width: 100% !important;',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  gap: 0 !important;',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
+      '}',
+      '.aplus-container.gapped { gap: 16px !important; }',
+      '.aplus-item {',
+      '  width: 100% !important;',
+      '  display: flex !important;',
+      '  justify-content: center !important;',
+      '  align-items: center !important;',
+      '  overflow: hidden !important;',
+      '  background: #141414 !important;',
+      '  line-height: 0 !important;',
+      '  font-size: 0 !important;',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
+      '}',
+      '.aplus-item.gapped { border-radius: 12px; }',
+      '.aplus-item img, .aplus-item video {',
+      '  width: 100% !important;',
+      '  height: auto !important;',
+      '  display: block !important;',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
+      '  border-radius: 0 !important;',
+      '}',
+      '.aplus-size-970  { max-width: 970px;  margin-left: auto !important; margin-right: auto !important; }',
+      '.aplus-size-1460 { max-width: 1460px; margin-left: auto !important; margin-right: auto !important; }',
+      // 兼容旧 wd-aplus-* 命名（防止任何旧 CSS 残留生效）
+      '.wd-aplus-section { margin-top: 48px; }',
+      '.wd-aplus-grid { display: flex !important; flex-direction: column !important; gap: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }',
+      '.wd-aplus-grid.gapped { gap: 16px !important; }',
+      '.wd-aplus-item { width: 100% !important; display: flex !important; justify-content: center !important; align-items: center !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important; font-size: 0 !important; }',
+      '.wd-aplus-item img, .wd-aplus-item video { width: 100% !important; height: auto !important; display: block !important; margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }'
+    ].join('\n');
+    if (document.head) document.head.appendChild(s);
+    else document.addEventListener('DOMContentLoaded', function () { document.head.appendChild(s); });
+  }
+
+  // 2) 共享渲染函数：返回 .aplus-section DOM 元素
+  function renderAplusSection(opts) {
+    opts = opts || {};
+    var images = opts.images || [];
+
+    var section = document.createElement('div');
+    section.className = 'aplus-section';
+    // 仅当有标题/描述时，才与上方内容拉开 48px 间距；否则保持紧贴（与原 works.html 行为一致）
+    section.style.cssText = (opts.title || opts.desc) ? 'margin-top: 48px;' : 'margin-top: 0;';
+
+    if (images.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'wd-empty';
+      empty.textContent = '暂无 A+ 内容';
+      section.appendChild(empty);
+      return section;
+    }
+
+    if (opts.title) {
+      var label = document.createElement('div');
+      label.className = 'work-detail-section-label';
+      label.textContent = opts.title;
+      section.appendChild(label);
+    }
+
+    if (opts.desc) {
+      var desc = document.createElement('p');
+      desc.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.7; margin: 0 0 24px 0; max-width: 600px;';
+      desc.textContent = opts.desc;
+      section.appendChild(desc);
+    }
+
+    var gap = opts.gap || opts.mode || 'seamless';
+    var isGapped = gap === 'gapped';
+
+    var grid = document.createElement('div');
+    grid.className = 'aplus-container' + (isGapped ? ' gapped' : '');
+    // 内联保险：即使外部 CSS 漏到这里也强制无缝
+    grid.style.cssText = 'width: 100%; display: flex; flex-direction: column; gap: ' + (isGapped ? '16px' : '0') + '; margin: 0; padding: 0;';
+    section.appendChild(grid);
+
+    var createMedia = opts.createMedia;
+    // openLightbox 优先用调用方传入的（兼容 IIFE 内引用），否则用 window.openLightbox
+    var aplusImageUrls = opts.aplusImageUrls || [];
+    var mainImageUrlsCount = opts.mainImageUrlsCount || 0;
+    var lightboxUrls = opts.lightboxUrls || [];
+    var altPrefix = opts.altPrefix || 'A+ 内容';
+    var openLightboxFn = opts.openLightbox || window.openLightbox;
+
+    images.forEach(function (item, i) {
+      var width = item.width || 970;
+      var div = document.createElement('div');
+      div.className = 'aplus-item aplus-size-' + width + (isGapped ? ' gapped' : '');
+      // 内联保险：彻底杜绝父级 .work-detail-main img 之类的 margin/border-radius 漏到 A+
+      div.style.cssText = 'width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; background: #141414; line-height: 0; font-size: 0; margin: 0; padding: 0;';
+
+      var media = createMedia ? createMedia(item.src, altPrefix + ' ' + (i + 1)) : null;
+      if (media && media.tagName === 'IMG') {
+        media.style.cssText = 'width: 100%; height: auto; display: block; margin: 0; padding: 0; border-radius: 0;';
+        media.style.cursor = 'zoom-in';
+        media.addEventListener('click', function () {
+          var idx = aplusImageUrls.indexOf(item.src);
+          if (idx >= 0 && openLightboxFn) openLightboxFn(lightboxUrls, mainImageUrlsCount + idx);
+        });
+      }
+      if (media) div.appendChild(media);
+      grid.appendChild(div);
+    });
+
+    return section;
+  }
+
+  // 3) 暴露到全局（兼容 lightbox.js 在 <head> 加载的情况）
+  function expose() { window.renderAplusSection = renderAplusSection; }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', expose);
+  } else {
+    expose();
+  }
+})();
