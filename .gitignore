@@ -1,3 +1,6 @@
 .workbuddy/
 node_modules/
 *.log
+
+.png_trash/
+放图片说明.txt
