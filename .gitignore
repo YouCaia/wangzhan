@@ -4,3 +4,4 @@ node_modules/
 
 .png_trash/
 放图片说明.txt
+.img_backup_*/
