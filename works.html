@@ -509,7 +509,7 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为洗护品牌打造的高转化主图，精准还原产品质地与光泽，配合场景化构图提升点击率。',
         folder: '美妆/M-洗发水/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z.mp4'],
+        main: ['z.mp4', 'z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
         aplus: {
           mode: 'seamless',
           images: [
@@ -565,7 +565,7 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为美妆品牌打造的高转化主图，精准还原膏体质感与光泽，配合场景化构图提升点击率。',
         folder: '美妆/M-美白霜/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg', 'z.mp4'],
+        main: ['z.mp4', 'z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
         aplus: {
           mode: 'seamless',
           images: [
@@ -869,7 +869,7 @@
       },
       {
         title: 'OZ-儿童忙碌板 主图设计',
-        category: '母婴',
+        category: '母婴-玩具',
         tags: '安全温和 · 贴心设计 · 母婴美学',
         desc: '为母婴产品定制的主图，突出安全温和与贴心设计，传递安心感。',
         folder: '母婴-玩具/OZ-儿童忙碌板/',
@@ -883,7 +883,7 @@
       },
       {
         title: 'P-儿童画板 主图设计',
-        category: '母婴',
+        category: '母婴-玩具',
         tags: '安全温和 · 贴心设计 · 母婴美学',
         desc: '为母婴产品定制的主图，突出安全温和与贴心设计，传递安心感。',
         folder: '母婴-玩具/P-儿童画板/',
@@ -897,7 +897,7 @@
       },
       {
         title: 'T-机器人 主图设计',
-        category: '母婴',
+        category: '母婴-玩具',
         tags: '安全温和 · 贴心设计 · 母婴美学',
         desc: '为母婴产品定制的主图，突出安全温和与贴心设计，传递安心感。',
         folder: '母婴-玩具/T-机器人/',
@@ -1026,8 +1026,8 @@
         el.src = src;
         el.controls = true;
         el.preload = 'metadata';
-        el.loop = true;
-        el.muted = true;
+        el.loop = false;
+        el.muted = false;
         el.playsInline = true;
         if (opts.objectFit) el.style.objectFit = opts.objectFit;
       } else {
@@ -1230,10 +1230,32 @@
         track.style.cssText = 'display:flex;height:100%;width:' + (mainMedia.length * 100) + '%;transition:transform 0.35s cubic-bezier(0.25,1,0.5,1);will-change:transform;';
         mainMedia.forEach((f, i) => {
           const slide = document.createElement('div');
-          slide.style.cssText = 'flex:0 0 ' + (100 / mainMedia.length) + '%;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+          slide.style.cssText = 'flex:0 0 ' + (100 / mainMedia.length) + '%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;';
           const media = createMedia(mediaSrc(work.folder, f), folderName(work.folder) + ' 主图 ' + (i + 1), '放媒体: ' + f);
-          media.style.cssText = 'width:100%;height:100%;object-fit:contain;cursor:zoom-in;user-select:none;-webkit-user-drag:none;';
-          if (media.tagName === 'IMG') {
+          const isVid = media.tagName === 'VIDEO';
+          media.style.cssText = 'width:100%;height:100%;object-fit:contain;' + (isVid ? '' : 'cursor:zoom-in;') + 'user-select:none;-webkit-user-drag:none;';
+          if (isVid) {
+            const playBtn = document.createElement('button');
+            playBtn.type = 'button';
+            playBtn.setAttribute('aria-label', '播放视频');
+            playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:background .2s,opacity .2s;';
+            playBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            playBtn.addEventListener('click', (e) => { e.stopPropagation(); media.play(); });
+            media.addEventListener('play', () => { playBtn.style.opacity = '0'; playBtn.style.pointerEvents = 'none'; });
+            media.addEventListener('pause', () => { if (media.currentTime > 0 && !media.ended) { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; } });
+            media.addEventListener('ended', () => { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; });
+            slide.appendChild(playBtn);
+            const expandBtn = document.createElement('button');
+            expandBtn.type = 'button';
+            expandBtn.title = '放大到原始比例 (1920×1080)';
+            expandBtn.style.cssText = 'position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.5);color:#fff;font-size:18px;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center;';
+            expandBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+            expandBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (typeof openLightbox === 'function') openLightbox([mediaSrc(work.folder, f)], 0);
+            });
+            slide.appendChild(expandBtn);
+          } else {
             media.addEventListener('click', () => {
               if (recentSwipe) return;
               const idx = mainImageFiles.indexOf(f);

@@ -53,6 +53,14 @@
     .wb-lightbox-img.grabbing {
       cursor: grabbing;
     }
+    .wb-lightbox-video {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      cursor: default;
+      background: #000;
+    }
     .wb-lightbox-close {
       position: absolute;
       top: 18px;
@@ -144,6 +152,7 @@
     <button class="wb-lightbox-arrow next" aria-label="下一张"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
     <div class="wb-lightbox-stage">
       <img class="wb-lightbox-img" src="" alt="">
+      <video class="wb-lightbox-video" src="" style="display:none"></video>
     </div>
     <div class="wb-lightbox-hint">点击图片关闭 · 滚轮缩放 · 左右滑动切换</div>
   `;
@@ -156,6 +165,7 @@
   else document.addEventListener('DOMContentLoaded', mountBox);
 
   const img = box.querySelector('.wb-lightbox-img');
+  const video = box.querySelector('.wb-lightbox-video');
   const counter = box.querySelector('.wb-lightbox-counter');
   const btnPrev = box.querySelector('.wb-lightbox-arrow.prev');
   const btnNext = box.querySelector('.wb-lightbox-arrow.next');
@@ -196,7 +206,25 @@
   }
 
   function update() {
-    img.src = urls[index] || '';
+    const url = urls[index] || '';
+    const isVid = /\.(mp4|webm|mov|m4v|ogg)$/i.test(url);
+    if (isVid) {
+      img.style.display = 'none';
+      video.style.display = '';
+      video.src = url;
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.loop = false;
+      video.play().catch(function(){});
+    } else {
+      video.style.display = 'none';
+      try { video.pause(); } catch (_) {}
+      video.removeAttribute('src');
+      try { video.load(); } catch (_) {}
+      img.style.display = '';
+      img.src = url;
+    }
     counter.textContent = urls.length > 1 ? (index + 1) + ' / ' + urls.length : '';
     btnPrev.disabled = index <= 0;
     btnNext.disabled = index >= urls.length - 1;
@@ -215,7 +243,9 @@
   function close() {
     box.classList.remove('active');
     document.body.style.overflow = '';
-    setTimeout(() => { img.src = ''; }, 300);
+    try { video.pause(); } catch (_) {}
+    video.style.display = 'none';
+    setTimeout(() => { img.src = ''; video.removeAttribute('src'); }, 300);
   }
 
   function prev() {
@@ -234,6 +264,10 @@
   img.addEventListener('click', function (e) {
     e.stopPropagation();
     close();
+  });
+  // 点击视频不关闭（让用户可以操作播放控件），仅 backdrop / 关闭按钮关闭
+  video.addEventListener('click', function (e) {
+    e.stopPropagation();
   });
 
   // 双击缩放
