@@ -2776,7 +2776,7 @@ window.__EDIT_OVERRIDES__ = {
             playBtn.setAttribute('aria-label', '播放视频');
             playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:background .2s,opacity .2s;';
             playBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-            playBtn.addEventListener('click', (e) => { e.stopPropagation(); media.play(); });
+            playBtn.addEventListener('click', (e) => { e.stopPropagation(); const pr = media.play(); if (pr && pr.catch) pr.catch(() => {}); });
             media.addEventListener('play', () => { playBtn.style.opacity = '0'; playBtn.style.pointerEvents = 'none'; });
             media.addEventListener('pause', () => { if (media.currentTime > 0 && !media.ended) { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; } });
             media.addEventListener('ended', () => { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; });
@@ -2888,8 +2888,10 @@ window.__EDIT_OVERRIDES__ = {
             }
           }
         };
-        mainWrap.addEventListener('pointerup', endPointer);
-        mainWrap.addEventListener('pointercancel', () => { pDragging = false; });
+        // 释放指针捕获，否则 pointerup 后合成的 click 目标会变成 mainWrap，
+        // 导致视频上的 ▶ 播放按钮 / ⛶ 放大按钮收不到点击（原生控件不受影响，故“左下能播、中间按钮无效”）
+        mainWrap.addEventListener('pointerup', (e) => { try { mainWrap.releasePointerCapture(e.pointerId); } catch (_) {} endPointer(); });
+        mainWrap.addEventListener('pointercancel', (e) => { try { mainWrap.releasePointerCapture(e.pointerId); } catch (_) {} pDragging = false; });
 
         setImage(0);
 

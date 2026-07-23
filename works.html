@@ -983,8 +983,23 @@
     let currentFilter = '全部';
     let currentDetailIndex = 0;
 
-    // 获取所有分类
-    const categories = ['全部', ...new Set(works.map(w => w.category))];
+    // 固定分类列表（含空类目，确保即使暂无作品也显示出来；顺序即展示顺序）
+    const categories = ['全部', '美妆', '宠物', '日用百货', '母婴-玩具', '节日', '3C', '建模', '渲染', '动画视频'];
+
+    // 独立视频：放在 images/动画视频/ 下的单独 mp4（由同步脚本在用户新增时自动补全）
+    const standaloneVideos = [];
+    // 聚合全站视频 → 用于“动画视频”分类（作品内的 z.mp4 / a.mp4 + 独立视频）
+    function getVideoList() {
+      const list = [];
+      works.forEach((w, idx) => {
+        const vids = [];
+        (w.main || []).forEach(f => { if (isVideoFile(f)) vids.push({ file: f, kind: '主图视频' }); });
+        (w.aplus && w.aplus.images || []).forEach(a => { if (a.file && isVideoFile(a.file)) vids.push({ file: a.file, kind: 'A+ 视频' }); });
+        vids.forEach(v => list.push({ folder: w.folder, file: v.file, title: w.title, sub: v.kind, workIndex: idx }));
+      });
+      standaloneVideos.forEach(s => list.push({ folder: s.folder, file: s.file, title: s.title || s.file, sub: '独立视频', workIndex: -1 }));
+      return list;
+    }
 
     // 渲染筛选栏
     function renderFilters() {
@@ -1084,8 +1099,65 @@
       return files.filter((f, i) => ok[i]);
     }
 
+    // 渲染动画视频聚合分类（收集全站 mp4 + 独立视频）
+    function renderVideoGallery() {
+      const vids = getVideoList();
+      if (vids.length === 0) {
+        grid.innerHTML = '<div class="empty-state">'
+          + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+          + '<p>动画视频分类下暂无视频</p></div>';
+        return;
+      }
+      grid.innerHTML = '';
+      vids.forEach((v, i) => {
+        const card = document.createElement('div');
+        card.className = 'work-card video-card';
+        card.style.animationDelay = (i * 0.08) + 's';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'work-card-thumb';
+        thumb.style.cssText = 'background:#000;';
+        const video = document.createElement('video');
+        video.src = mediaSrc(v.folder, v.file);
+        video.controls = true;
+        video.preload = 'metadata';
+        video.playsInline = true;
+        video.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+        video.onerror = function () { video.style.display = 'none'; };
+        thumb.appendChild(video);
+
+        const badge = document.createElement('span');
+        badge.className = 'work-card-badge';
+        badge.textContent = '动画视频';
+        thumb.appendChild(badge);
+        card.appendChild(thumb);
+
+        const info = document.createElement('div');
+        info.className = 'work-card-info';
+        const h3 = document.createElement('h3');
+        h3.textContent = v.title;
+        const p = document.createElement('p');
+        p.textContent = '动画视频 · ' + v.sub;
+        info.appendChild(h3);
+        info.appendChild(p);
+        card.appendChild(info);
+
+        if (v.workIndex >= 0) {
+          const link = document.createElement('a');
+          link.href = 'javascript:void(0)';
+          link.className = 'video-open-work';
+          link.textContent = '查看作品 →';
+          link.style.cssText = 'display:inline-block;margin-top:6px;color:#e8b864;font-size:12px;cursor:pointer;';
+          link.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openDetail(v.workIndex); });
+          info.appendChild(link);
+        }
+        grid.appendChild(card);
+      });
+    }
+
     // 渲染作品网格
     function renderGrid() {
+      if (currentFilter === '动画视频') { renderVideoGallery(); return; }
       const filtered = currentFilter === '全部'
         ? works
         : works.filter(w => w.category === currentFilter);
@@ -1240,7 +1312,7 @@
             playBtn.setAttribute('aria-label', '播放视频');
             playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:background .2s,opacity .2s;';
             playBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-            playBtn.addEventListener('click', (e) => { e.stopPropagation(); media.play(); });
+            playBtn.addEventListener('click', (e) => { e.stopPropagation(); const pr = media.play(); if (pr && pr.catch) pr.catch(() => {}); });
             media.addEventListener('play', () => { playBtn.style.opacity = '0'; playBtn.style.pointerEvents = 'none'; });
             media.addEventListener('pause', () => { if (media.currentTime > 0 && !media.ended) { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; } });
             media.addEventListener('ended', () => { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; });
@@ -1337,8 +1409,9 @@
             }
           }
         };
-        galleryMain.addEventListener('pointerup', endPointer);
-        galleryMain.addEventListener('pointercancel', () => { pDragging = false; });
+        // 释放指针捕获，否则 click 目标会变成 galleryMain，视频上的 ▶/⛶ 按钮收不到点击
+        galleryMain.addEventListener('pointerup', (e) => { try { galleryMain.releasePointerCapture(e.pointerId); } catch (_) {} endPointer(); });
+        galleryMain.addEventListener('pointercancel', (e) => { try { galleryMain.releasePointerCapture(e.pointerId); } catch (_) {} pDragging = false; });
       }
 
       if (mainMedia.length > 0) {
