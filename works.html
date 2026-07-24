@@ -1332,6 +1332,7 @@
             });
             playBtn.addEventListener('mouseenter', () => { playBtn.style.opacity = '1'; });
             playBtn.addEventListener('mouseleave', () => { if (!media.paused) playBtn.style.opacity = '0.55'; });
+            playBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); }); // 阻止 wrapper 捕获指针
             media.addEventListener('play', syncPlayBtn);
             media.addEventListener('pause', syncPlayBtn);
             media.addEventListener('ended', () => { media.currentTime = 0; syncPlayBtn(); });
@@ -1345,6 +1346,7 @@
               e.stopPropagation();
               if (typeof openLightbox === 'function') openLightbox([mediaSrc(work.folder, f)], 0);
             });
+            expandBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
             slide.appendChild(expandBtn);
           } else {
             media.addEventListener('click', () => {
@@ -1392,7 +1394,7 @@
       if (galleryMain && mainMedia.length > 1) {
         galleryMain.addEventListener('pointerdown', (e) => {
           if (e.pointerType === 'mouse' && e.button !== 0) return;
-          if (e.target.closest('button')) return; // 按钮（播放/放大）自行处理，不进入滑动/捕获逻辑
+          if (e.target.closest('button') || e.target.closest('video')) return; // 按钮与视频区域不进入滑动/捕获逻辑
           pDragging = true; pMoved = false;
           pStartX = e.clientX; pCurX = e.clientX;
           if (track) track.style.transition = 'none';

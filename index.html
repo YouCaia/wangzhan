@@ -2849,6 +2849,7 @@ window.__EDIT_OVERRIDES__ = {
             });
             playBtn.addEventListener('mouseenter', () => { playBtn.style.opacity = '1'; });
             playBtn.addEventListener('mouseleave', () => { if (!media.paused) playBtn.style.opacity = '0.55'; });
+            playBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); }); // 阻止 wrapper 捕获指针
             media.addEventListener('play', syncPlayBtn);
             media.addEventListener('pause', syncPlayBtn);
             media.addEventListener('ended', () => { media.currentTime = 0; syncPlayBtn(); });
@@ -2863,6 +2864,7 @@ window.__EDIT_OVERRIDES__ = {
               e.stopPropagation();
               if (typeof openLightbox === 'function') openLightbox([src], 0);
             });
+            expandBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
             slide.appendChild(expandBtn);
           } else {
             media.addEventListener('click', () => {
@@ -2926,7 +2928,7 @@ window.__EDIT_OVERRIDES__ = {
         let pStartX = 0, pCurX = 0, pDragging = false, pMoved = false;
         mainWrap.addEventListener('pointerdown', (e) => {
           if (e.pointerType === 'mouse' && e.button !== 0) return;
-          if (e.target.closest('button')) return; // 按钮（播放/放大）自行处理，不进入滑动/捕获逻辑
+          if (e.target.closest('button') || e.target.closest('video')) return; // 按钮与视频区域不进入滑动/捕获逻辑
           pDragging = true; pMoved = false;
           pStartX = e.clientX; pCurX = e.clientX;
           track.style.transition = 'none';
