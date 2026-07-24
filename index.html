@@ -2836,9 +2836,10 @@ window.__EDIT_OVERRIDES__ = {
                 playBtn.style.opacity = '1';
                 playBtn.style.pointerEvents = 'auto';
               } else {
+                // 播放中：默认隐藏，不遮挡画面
                 playBtn.innerHTML = PAUSE_SVG;
-                playBtn.style.opacity = '0.55';
-                playBtn.style.pointerEvents = 'auto';
+                playBtn.style.opacity = '0';
+                playBtn.style.pointerEvents = 'none';
               }
             }
             syncPlayBtn();
@@ -2847,9 +2848,10 @@ window.__EDIT_OVERRIDES__ = {
               if (media.paused) { const pr = media.play(); if (pr && pr.catch) pr.catch(() => {}); }
               else { media.pause(); }
             });
-            playBtn.addEventListener('mouseenter', () => { playBtn.style.opacity = '1'; });
-            playBtn.addEventListener('mouseleave', () => { if (!media.paused) playBtn.style.opacity = '0.55'; });
             playBtn.addEventListener('pointerdown', (e) => { e.stopPropagation(); }); // 阻止 wrapper 捕获指针
+            // 播放中鼠标悬停视频区域时临时显示按钮（移出即隐藏），不遮挡观看
+            slide.addEventListener('mouseenter', () => { if (!media.paused) { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; } });
+            slide.addEventListener('mouseleave', () => { if (!media.paused) { playBtn.style.opacity = '0'; playBtn.style.pointerEvents = 'none'; } });
             media.addEventListener('play', syncPlayBtn);
             media.addEventListener('pause', syncPlayBtn);
             media.addEventListener('ended', () => { media.currentTime = 0; syncPlayBtn(); });
