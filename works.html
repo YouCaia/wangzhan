@@ -1309,13 +1309,32 @@
           if (isVid) {
             const playBtn = document.createElement('button');
             playBtn.type = 'button';
-            playBtn.setAttribute('aria-label', '播放视频');
-            playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:background .2s,opacity .2s;';
-            playBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-            playBtn.addEventListener('click', (e) => { e.stopPropagation(); const pr = media.play(); if (pr && pr.catch) pr.catch(() => {}); });
-            media.addEventListener('play', () => { playBtn.style.opacity = '0'; playBtn.style.pointerEvents = 'none'; });
-            media.addEventListener('pause', () => { if (media.currentTime > 0 && !media.ended) { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; } });
-            media.addEventListener('ended', () => { playBtn.style.opacity = '1'; playBtn.style.pointerEvents = 'auto'; });
+            playBtn.setAttribute('aria-label', '播放 / 暂停视频');
+            playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:background .2s,opacity .2s,transform .15s;';
+            const PLAY_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            const PAUSE_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+            function syncPlayBtn() {
+              if (media.paused) {
+                playBtn.innerHTML = PLAY_SVG;
+                playBtn.style.opacity = '1';
+                playBtn.style.pointerEvents = 'auto';
+              } else {
+                playBtn.innerHTML = PAUSE_SVG;
+                playBtn.style.opacity = '0.55';
+                playBtn.style.pointerEvents = 'auto';
+              }
+            }
+            syncPlayBtn();
+            playBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (media.paused) { const pr = media.play(); if (pr && pr.catch) pr.catch(() => {}); }
+              else { media.pause(); }
+            });
+            playBtn.addEventListener('mouseenter', () => { playBtn.style.opacity = '1'; });
+            playBtn.addEventListener('mouseleave', () => { if (!media.paused) playBtn.style.opacity = '0.55'; });
+            media.addEventListener('play', syncPlayBtn);
+            media.addEventListener('pause', syncPlayBtn);
+            media.addEventListener('ended', () => { media.currentTime = 0; syncPlayBtn(); });
             slide.appendChild(playBtn);
             const expandBtn = document.createElement('button');
             expandBtn.type = 'button';
@@ -1373,6 +1392,7 @@
       if (galleryMain && mainMedia.length > 1) {
         galleryMain.addEventListener('pointerdown', (e) => {
           if (e.pointerType === 'mouse' && e.button !== 0) return;
+          if (e.target.closest('button')) return; // 按钮（播放/放大）自行处理，不进入滑动/捕获逻辑
           pDragging = true; pMoved = false;
           pStartX = e.clientX; pCurX = e.clientX;
           if (track) track.style.transition = 'none';
@@ -1398,8 +1418,10 @@
           if (delta < -threshold && currentImg < mainMedia.length - 1) showMain(currentImg + 1);
           else if (delta > threshold && currentImg > 0) showMain(currentImg - 1);
           else showMain(currentImg);
-          // 非滑动（点击/轻触）打开全屏查看器，绕过指针捕获吞掉 click 的问题
-          if (!pMoved && typeof openLightbox === 'function') {
+          // 非滑动（点击/轻触）打开全屏查看器；视频幻灯片由中心按钮控制，不在此打开
+          const curSlideEl = track.children[currentImg];
+          const curIsVideo = curSlideEl && curSlideEl.querySelector('video');
+          if (!pMoved && !curIsVideo && typeof openLightbox === 'function') {
             const f = mainMedia[currentImg];
             const imgIdx = mainImageFiles.indexOf(f);
             if (imgIdx >= 0) {
