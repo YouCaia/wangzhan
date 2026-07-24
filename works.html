@@ -1004,7 +1004,7 @@
     // 渲染筛选栏
     function renderFilters() {
       filterBar.innerHTML = categories.map(cat => {
-        const count = cat === '全部' ? works.length : works.filter(w => w.category === cat).length;
+        const count = cat === '动画视频' ? getVideoList().length : (cat === '全部' ? works.length : works.filter(w => w.category === cat).length);
         return `<button class="filter-pill ${cat === currentFilter ? 'active' : ''}" data-cat="${cat}">
           ${cat}<span class="filter-count">${count}</span>
         </button>`;
