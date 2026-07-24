@@ -196,7 +196,7 @@
     .nav-link.active::after { width: 100%; }
 
     /* ========== Avatar ========== */
-    .avatar-wrap { position: relative; cursor: pointer; }
+    .avatar-wrap { position: relative; }
     .avatar-ring {
       background: linear-gradient(135deg, #f0d089, #d4a857, #a8823a, #f0d089);
       background-size: 300% 300%;
@@ -221,22 +221,8 @@
       position: relative;
     }
     .avatar-upload-hint {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      border-radius: 50%;
-      color: #f0d089;
-      font-size: 0.7rem;
-      gap: 4px;
+      display: none;
     }
-    .avatar-wrap:hover .avatar-upload-hint { opacity: 1; }
 
     /* ========== Button ========== */
     .btn-primary {
@@ -978,10 +964,6 @@
     .hero-avatar-card .avatar-inner img {
       width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
     }
-    .hero-avatar-card .avatar-upload-hint {
-      background: rgba(0,0,0,0.5);
-    }
-    .hero-avatar-card .avatar-upload-hint svg { margin-bottom: 2px; }
 
     /* ========== Right-side scroll indicator ========== */
     .scroll-indicator-right {
@@ -1088,12 +1070,6 @@
       color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.3s;
     }
     .qr-close:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
-    .qr-upload-btn {
-      margin-top: 16px; padding: 8px 18px; border-radius: 999px;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer; transition: all 0.3s;
-    }
-    .qr-upload-btn:hover { background: rgba(212,168,87,0.1); border-color: rgba(212,168,87,0.3); color: var(--gold-light); }
 
     /* ========== Work detail gallery ========== */
     .wd-gallery {
@@ -1359,7 +1335,7 @@ window.__EDIT_OVERRIDES__ = {
 
           <!-- 左侧：头像独立卡片 -->
           <div class="hero-avatar-card fade-in-up" style="animation-delay: 0.7s;">
-            <div class="avatar-wrap" title="点击更换头像" id="avatar-wrap">
+            <div class="avatar-wrap" id="avatar-wrap">
               <div class="avatar-ring">
                 <div class="avatar-inner w-full h-full flex items-center justify-center">
                   <svg id="avatar-default" viewBox="0 0 100 100" width="55%" height="55%" fill="none">
@@ -1367,13 +1343,6 @@ window.__EDIT_OVERRIDES__ = {
                     <path d="M20 82 C20 62, 80 62, 80 82" fill="rgba(212, 168, 87, 0.3)"/>
                   </svg>
                   <img id="avatar-img" src="" alt="头像" style="display:none;">
-                  <div class="avatar-upload-hint">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                      <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    <span>更换头像</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1381,7 +1350,6 @@ window.__EDIT_OVERRIDES__ = {
               <h2 data-edit="hero-name">帅财</h2>
               <p data-edit="hero-title">亚马逊电商设计师</p>
             </div>
-            <input type="file" id="avatar-input" accept="image/*" style="display:none;">
           </div>
 
           <!-- 右侧：基础个人介绍 -->
@@ -1803,12 +1771,10 @@ window.__EDIT_OVERRIDES__ = {
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
           </svg>
-          <p>请上传或放置微信二维码图片<br>images/wechat-qr.jpg</p>
+          <p>微信二维码图片<br>images/wechat-qr.jpg</p>
         </div>
       </div>
       <div class="qr-note" data-edit="qr-note">添加请备注：来意 / 产品 / 需求</div>
-      <button class="qr-upload-btn" id="qr-upload-btn">上传二维码图片</button>
-      <input type="file" id="qr-input" accept="image/*" style="display:none;">
     </div>
   </div>
 
@@ -1880,11 +1846,9 @@ window.__EDIT_OVERRIDES__ = {
     // Avatar upload (localStorage + file fallback)
     // ============================================
     (function() {
-      const wrap = document.getElementById('avatar-wrap');
-      const input = document.getElementById('avatar-input');
       const img = document.getElementById('avatar-img');
       const defaultSvg = document.getElementById('avatar-default');
-      if (!wrap || !input || !img) return;
+      if (!img) return;
 
       function setAvatar(src) {
         if (!src) {
@@ -1897,29 +1861,11 @@ window.__EDIT_OVERRIDES__ = {
         if (defaultSvg) defaultSvg.style.display = 'none';
       }
 
-      // 加载：优先 localStorage，否则尝试文件路径
-      const saved = localStorage.getItem('youcai_avatar');
-      if (saved) {
-        setAvatar(saved);
-      } else {
-        // 尝试加载 images/avatar.jpg，如果存在则使用
-        const fileImg = new Image();
-        fileImg.src = 'images/avatar.jpg';
-        fileImg.onload = function() { setAvatar('images/avatar.jpg'); };
-      }
-
-      wrap.addEventListener('click', () => input.click());
-      input.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-          const data = ev.target.result;
-          localStorage.setItem('youcai_avatar', data);
-          setAvatar(data);
-        };
-        reader.readAsDataURL(file);
-      });
+      // 由本地文件维护，不再支持点击上传：直接加载 images/avatar.jpg
+      const fileImg = new Image();
+      fileImg.src = 'images/avatar.jpg';
+      fileImg.onload = function() { setAvatar('images/avatar.jpg'); };
+      fileImg.onerror = function() { setAvatar(null); };
     })();
 
     // ============================================
@@ -1931,8 +1877,6 @@ window.__EDIT_OVERRIDES__ = {
       const close = document.getElementById('qr-close');
       const img = document.getElementById('qr-img');
       const placeholder = document.getElementById('qr-placeholder');
-      const uploadBtn = document.getElementById('qr-upload-btn');
-      const input = document.getElementById('qr-input');
       if (!btn || !modal) return;
 
       function setQr(src) {
@@ -1946,15 +1890,11 @@ window.__EDIT_OVERRIDES__ = {
         placeholder.style.display = 'none';
       }
 
-      // 加载：优先 localStorage，否则尝试文件路径
-      const saved = localStorage.getItem('youcai_qr');
-      if (saved) {
-        setQr(saved);
-      } else {
-        const fileImg = new Image();
-        fileImg.src = 'images/wechat-qr.jpg';
-        fileImg.onload = function() { setQr('images/wechat-qr.jpg'); };
-      }
+      // 由本地文件维护，不再支持点击上传：直接加载 images/wechat-qr.jpg
+      const fileImg = new Image();
+      fileImg.src = 'images/wechat-qr.jpg';
+      fileImg.onload = function() { setQr('images/wechat-qr.jpg'); };
+      fileImg.onerror = function() { setQr(null); };
 
       function openModal() { modal.classList.add('active'); }
       function closeModal() { modal.classList.remove('active'); }
@@ -1963,19 +1903,6 @@ window.__EDIT_OVERRIDES__ = {
       close.addEventListener('click', closeModal);
       modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
-
-      uploadBtn.addEventListener('click', () => input.click());
-      input.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-          const data = ev.target.result;
-          localStorage.setItem('youcai_qr', data);
-          setQr(data);
-        };
-        reader.readAsDataURL(file);
-      });
     })();
 
     // ============================================
