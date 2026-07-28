@@ -5,6 +5,10 @@
 (function () {
   'use strict';
 
+  // 全局共享图标（播放/暂停），供各页视频按钮复用，避免重复定义
+  window.PLAY_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  window.PAUSE_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+
   // 注入样式
   const style = document.createElement('style');
   style.textContent = `
