@@ -172,6 +172,9 @@
     .work-card:hover .work-card-thumb::after {
       opacity: 1;
     }
+    /* 视频卡片：禁用遮挡层，确保原生控件与中央播放按钮可点 */
+    .video-card .work-card-thumb::after { display: none; }
+    .video-card .work-card-thumb video { position: relative; z-index: 1; }
     .work-card-badge {
       position: absolute; top: 14px; left: 14px;
       padding: 5px 12px;
@@ -1126,6 +1129,36 @@
         video.onerror = function () { video.style.display = 'none'; };
         thumb.appendChild(video);
 
+        // 中央播放/暂停按钮（与详情页一致），让卡片一眼可点
+        const playBtn = document.createElement('button');
+        playBtn.type = 'button';
+        playBtn.setAttribute('aria-label', '播放 / 暂停视频');
+        playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity .2s,transform .15s;';
+        const PLAY_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+        const PAUSE_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+        function syncVideoBtn() {
+          if (video.paused) {
+            playBtn.innerHTML = PLAY_SVG;
+            playBtn.style.opacity = '1';
+            playBtn.style.pointerEvents = 'auto';
+          } else {
+            playBtn.innerHTML = PAUSE_SVG;
+            playBtn.style.opacity = '0';
+            playBtn.style.pointerEvents = 'none';
+          }
+        }
+        syncVideoBtn();
+        playBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (video.paused) { const pr = video.play(); if (pr && pr.catch) pr.catch(function(){}); }
+          else { video.pause(); }
+        });
+        playBtn.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+        video.addEventListener('play', syncVideoBtn);
+        video.addEventListener('pause', syncVideoBtn);
+        video.addEventListener('ended', function () { video.currentTime = 0; syncVideoBtn(); });
+        thumb.appendChild(playBtn);
+
         const badge = document.createElement('span');
         badge.className = 'work-card-badge';
         badge.textContent = '动画视频';
@@ -1228,6 +1261,8 @@
     }
 
     function closeDetail() {
+      // 关闭前暂停详情内所有视频，避免画面消失后声音残留
+      overlay.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (_) {} });
       overlay.classList.remove('active');
       document.body.style.overflow = '';
     }
