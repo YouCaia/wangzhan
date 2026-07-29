@@ -3019,6 +3019,8 @@ window.__EDIT_OVERRIDES__ = {
       function closeWorkDetail() {
         overlay.classList.remove('active');
         document.body.style.overflow = '';
+        // 关闭时暂停详情内所有视频，避免关闭后声音/画面继续（与 works.html 行为一致）
+        overlay.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (_) {} });
       }
 
       // 首页精选作品：动态渲染真实缩略图卡片（点击在 renderHomeWorks 内逐卡绑定）
