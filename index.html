@@ -1162,31 +1162,6 @@
     .aplus-item img { width: 100%; height: auto; display: block; }
     .aplus-size-970 { max-width: 970px; margin: 0 auto; }
     .aplus-size-1460 { max-width: 1460px; margin: 0 auto; }
-    /* ========== 作品碎片互动区 ========== */
-    .work-particles {
-      position: relative;
-      margin-top: 4rem;
-      height: 440px;
-      background: #0a0a0a;
-      border-top: 1px solid rgba(212,168,87,0.18);
-      border-bottom: 1px solid rgba(212,168,87,0.18);
-      overflow: hidden;
-    }
-    .work-particles-canvas { display: block; width: 100%; height: 100%; }
-    .wp-head {
-      position: absolute; top: 26px; left: 0; right: 0;
-      text-align: center; z-index: 2; pointer-events: none;
-    }
-    .wp-label {
-      display: inline-block; font-size: 11px; letter-spacing: 0.3em;
-      color: var(--gold); opacity: 0.7; font-family: 'Inter', sans-serif;
-    }
-    .wp-title {
-      margin: 6px 0 4px; font-size: clamp(22px, 4vw, 34px); font-weight: 600;
-      color: #f5f5f5; font-family: 'Noto Serif SC', serif;
-    }
-    .wp-hint { margin: 0; font-size: 13px; color: rgba(245,245,245,0.45); }
-
   </style>
 <script>
 window.__EDIT_OVERRIDES__ = {
@@ -1745,16 +1720,6 @@ window.__EDIT_OVERRIDES__ = {
 
         </div>
       </div>
-
-      <!-- 首页底部「作品碎片」互动区 -->
-      <section id="work-particles" class="work-particles" aria-label="作品碎片互动区">
-        <div class="wp-head">
-          <span class="wp-label">WORKS</span>
-          <h2 class="wp-title" data-edit="particles-title">拨动我的作品</h2>
-          <p class="wp-hint" data-edit="particles-hint">移动鼠标，推开漂浮的作品碎片</p>
-        </div>
-        <canvas id="work-particles-canvas" class="work-particles-canvas"></canvas>
-      </section>
 
       <!-- 页脚 -->
       <footer class="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -3135,8 +3100,5 @@ window.__EDIT_OVERRIDES__ = {
       });
     })();
   </script>
-  <script src="vendor/matter.min.js"></script>
-  <script src="work-particles.js"></script>
-  <script src="cursor-trail.js"></script>
 </body>
 </html>
