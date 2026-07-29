@@ -26,7 +26,7 @@
   st.height = '100%';
   st.zIndex = '9999';
   st.pointerEvents = 'none';
-  st.opacity = '0.18';
+  st.opacity = '0.32';
   st.mixBlendMode = 'screen';
   (document.body || document.documentElement).appendChild(canvas);
 
@@ -49,20 +49,20 @@
     for (var y = 0; y < SIM_H; y++) {
       for (var x = 0; x < SIM_W; x++) {
         var i = (y * SIM_W + x) * 4;
-        var v = 7 + (1 - y / SIM_H) * 9;                                   // 上亮下暗的竖向渐变
-        var caustic = (Math.sin(y * 0.17 + Math.sin(x * 0.05) * 1.4) * 0.5 + 0.5) * 7; // 横向水光
-        var gold = Math.max(0, Math.sin(x * 0.028 + y * 0.02)) * 5;        // 微弱金色
-        base[i]     = v + gold * 0.8;
-        base[i + 1] = v + gold * 0.55;
-        base[i + 2] = v * 0.7 + caustic * 0.35 + gold * 0.2;
+        var v = 10 + (1 - y / SIM_H) * 12;                                 // 上亮下暗的竖向渐变
+        var caustic = (Math.sin(y * 0.17 + Math.sin(x * 0.05) * 1.4) * 0.5 + 0.5) * 14; // 横向水光
+        var gold = Math.max(0, Math.sin(x * 0.028 + y * 0.02)) * 12;       // 金色
+        base[i]     = v + gold * 1.0;
+        base[i + 1] = v + gold * 0.7;
+        base[i + 2] = v * 0.7 + caustic * 0.6 + gold * 0.3;
         base[i + 3] = 255;
       }
     }
   })();
 
   // ---- 可调参数（轻微适中）----
-  var DAMP = 0.94;   // 阻尼：越接近 1 涟漪越持久
-  var AMP = 3;       // 位移强度：水波折射幅度
+  var DAMP = 0.96;   // 阻尼：越接近 1 涟漪越持久
+  var AMP = 5;       // 位移强度：水波折射幅度
   var lastT = 0, ambientTick = 0;
 
   function resize() {
@@ -77,7 +77,7 @@
   function disturb(cx, cy, power) {
     var gx = Math.floor(cx / window.innerWidth * SIM_W);
     var gy = Math.floor(cy / window.innerHeight * SIM_H);
-    var r = 3;
+    var r = 7;
     for (var y = -r; y <= r; y++) {
       for (var x = -r; x <= r; x++) {
         var px = gx + x, py = gy + y;
@@ -132,15 +132,15 @@
     if (!primed) { lastX = e.clientX; lastY = e.clientY; primed = true; return; }
     var vx = e.clientX - lastX, vy = e.clientY - lastY;
     var sp = Math.min(Math.sqrt(vx * vx + vy * vy), 40);
-    disturb(e.clientX, e.clientY, 0.22 + sp * 0.02); // 速度越快，涟漪稍强（仍克制）
+    disturb(e.clientX, e.clientY, 0.5 + sp * 0.04); // 速度越快，涟漪稍强
     lastX = e.clientX; lastY = e.clientY;
   }, { passive: true });
 
   // 极缓慢的环境微漾，让静止时也不是死水（很弱）
   function ambient() {
     ambientTick++;
-    if (ambientTick % 36 === 0) {
-      disturb(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 0.12);
+    if (ambientTick % 24 === 0) {
+      disturb(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 0.2);
     }
   }
 
