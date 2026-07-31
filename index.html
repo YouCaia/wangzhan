@@ -1068,6 +1068,64 @@
     }
     .qr-close:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
 
+    /* ========== 版权声明弹窗 ========== */
+    .cr-modal {
+      position: fixed; inset: 0; z-index: 20000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.72);
+      -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s ease;
+      padding: 20px;
+    }
+    .cr-modal.active { opacity: 1; pointer-events: auto; }
+    .cr-card {
+      position: relative;
+      width: 100%; max-width: 580px;
+      max-height: 86vh; overflow-y: auto;
+      background: linear-gradient(160deg, rgba(26,22,15,0.98), rgba(13,11,8,0.98));
+      border: 1px solid rgba(212,168,87,0.42);
+      border-radius: 16px;
+      padding: 32px 30px 26px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(212,168,87,0.06);
+      transform: translateY(18px) scale(0.97);
+      transition: transform 0.32s cubic-bezier(.2,.8,.2,1);
+    }
+    .cr-modal.active .cr-card { transform: translateY(0) scale(1); }
+    .cr-card h3 {
+      margin: 0 0 4px; color: #f0d089;
+      font-family: 'Noto Serif SC', serif; font-weight: 600;
+      font-size: 1.5rem; letter-spacing: 1px;
+    }
+    .cr-sub {
+      margin: 0 0 18px; color: #cbb98a; font-size: 11px;
+      letter-spacing: 3px; text-transform: uppercase; opacity: .75;
+    }
+    .cr-card ol { margin: 0; padding-left: 22px; color: #e8dcc0; font-size: 14px; line-height: 1.9; }
+    .cr-card ol li { margin-bottom: 12px; }
+    .cr-card ol li b { color: #f0d089; font-weight: 600; }
+    .cr-foot {
+      margin-top: 20px; padding-top: 14px;
+      border-top: 1px solid rgba(212,168,87,0.16);
+      color: #cbb98a; font-size: 12px; line-height: 1.7;
+    }
+    .cr-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 34px; height: 34px; border-radius: 9px;
+      background: none; border: 1px solid rgba(212,168,87,0.25);
+      color: #cbb98a; font-size: 20px; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .cr-close:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
+    .footer-cr-btn {
+      background: none; border: none; cursor: pointer; padding: 0;
+      color: #cbb98a; font-size: 12px; letter-spacing: 1px;
+      font-family: inherit; transition: color .2s;
+    }
+    .footer-cr-btn:hover { color: #f0d089; }
+    .site-footer { z-index: 1; }
+
     /* ========== Work detail gallery ========== */
     .wd-gallery {
       position: relative;
@@ -1722,8 +1780,9 @@ window.__EDIT_OVERRIDES__ = {
       </div>
 
       <!-- 页脚 -->
-      <footer class="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <p class="text-white/30 text-xs font-mono tracking-wider">© 2026 YOUCAI · 有财视觉设计工作室</p>
+      <footer class="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-center gap-4 site-footer">
+        <p class="text-white/30 text-xs font-mono tracking-wider">© � 2026 YOUCAI · 有财视觉设计工作室 · 版权所有 · 侵权必究</p>
+        <button id="open-copyright" class="footer-cr-btn">查看版权声明</button>
       </footer>
 
     </div>
@@ -1774,6 +1833,37 @@ window.__EDIT_OVERRIDES__ = {
       <div class="qr-note" data-edit="qr-note">添加请备注：来意 / 产品 / 需求</div>
     </div>
   </div>
+
+  <!-- 版权声明弹窗 -->
+  <div class="cr-modal" id="copyright-modal" role="dialog" aria-modal="true" aria-label="版权与展示声明">
+    <div class="cr-card">
+      <button class="cr-close" id="cr-close" title="关闭" aria-label="关闭">&times;</button>
+      <h3>版权与展示声明</h3>
+      <p class="cr-sub">Copyright &amp; Disclaimer</p>
+      <ol>
+        <li>本网站所展示的作品，系本人在职期间接受公司委托、为公司完成的设计成果。相关产品造型、视觉表达及涉及的知识产权均归所属公司所有，本人仅负责设计制图与视觉执行，不主张相关产品的所有权。</li>
+        <li>本页面仅供本人设计能力与工作成果展示之用，不以任何方式用于商业获利，亦不构成对任何第三方品牌的产品归属或授权声明。</li>
+        <li>未经相关权利方书面许可，任何单位或个人不得对本站展示内容实施抄袭、盗用、转载或商业性使用。</li>
+        <li>若发现任何平台出现与本站作品实质性雷同的内容，本人将配合权利方依法追究侵权责任；情节严重的，协助公司提起诉讼。</li>
+        <li>如因展示内容产生任何权属或侵权争议，以相关公司与本人的实际约定及法律规定为准。</li>
+      </ol>
+      <div class="cr-foot">© 2026 YOUCAI · 有财视觉设计工作室 · 版权所有 · 侵权必究</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var modal = document.getElementById('copyright-modal');
+      var openBtn = document.getElementById('open-copyright');
+      var closeBtn = document.getElementById('cr-close');
+      if (!modal) return;
+      function openCr() { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      function closeCr() { modal.classList.remove('active'); document.body.style.overflow = ''; }
+      if (openBtn) openBtn.addEventListener('click', openCr);
+      if (closeBtn) closeBtn.addEventListener('click', closeCr);
+      modal.addEventListener('click', function (e) { if (e.target === modal) closeCr(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('active')) closeCr(); });
+    })();
+  </script>
 
   <script>
     // ============================================
