@@ -1179,14 +1179,6 @@
         setTimeout(() => resolve(false), 12000); // 超时保护
       });
     }
-    // 过滤出真实存在的文件（只渲染存在的，缺失的留空）
-    async function filterExisting(folder, files) {
-      if (!files || !files.length) return [];
-      const srcs = files.map(f => mediaSrc(folder, f));
-      const ok = await Promise.all(srcs.map(s => mediaExists(s)));
-      return files.filter((f, i) => ok[i]);
-    }
-
     // 渲染动画视频聚合分类（收集全站 mp4 + 独立视频）
     function renderVideoGallery() {
       const vids = getVideoList();

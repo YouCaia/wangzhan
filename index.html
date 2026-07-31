@@ -2819,13 +2819,6 @@ window.__EDIT_OVERRIDES__ = {
           setTimeout(() => resolve(false), 12000);
         });
       }
-      async function filterExisting(folder, files) {
-        if (!files || !files.length) return [];
-        const srcs = files.map(f => mediaSrc(folder, f));
-        const ok = await Promise.all(srcs.map(s => mediaExists(s)));
-        return files.filter((f, i) => ok[i]);
-      }
-
       // 构建主图画廊（1:1 主图 + 缩略图 + 箭头切换 + 滑动切换 + 点击放大）
       function buildGallery(data) {
         const gallery = document.createElement('div');
