@@ -523,3 +523,22 @@
     expose();
   }
 })();
+
+// === 内容防盗：禁止图片/视频右键"另存为"与拖拽下载 ===
+// 说明：纯静态站点（GitHub Pages）无法在"另存为"时把原始图替换成水印图——
+// 浏览器直接保存 <img src> 的原始字节，JS 没有钩子能在那一刻拦截或替换。
+// 因此采用"取消图片另存为 + 禁止拖拽"的休闲级威慑，挡住普通访客顺手保存。
+// 局限：开发者工具 / 网络面板仍可取到原图；100% 防盗需服务端或根本不公开原图。
+(function () {
+  'use strict';
+  function isMedia(t) {
+    return !!t && (t.tagName === 'IMG' || t.tagName === 'VIDEO');
+  }
+  // 捕获阶段拦截，确保在任何业务监听之前阻止
+  document.addEventListener('contextmenu', function (e) {
+    if (isMedia(e.target)) e.preventDefault();
+  }, true);
+  document.addEventListener('dragstart', function (e) {
+    if (isMedia(e.target)) e.preventDefault();
+  }, true);
+})();
