@@ -457,10 +457,7 @@
     section.style.cssText = (opts.title || opts.desc) ? 'margin-top: 48px;' : 'margin-top: 0;';
 
     if (images.length === 0) {
-      var empty = document.createElement('div');
-      empty.className = 'wd-empty';
-      empty.textContent = '暂无 A+ 内容';
-      section.appendChild(empty);
+      // 无 A+ 内容时不渲染占位文字，保持详情整洁（建模类作品暂无 A+ 图）
       return section;
     }
 
