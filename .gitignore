@@ -5,3 +5,6 @@ node_modules/
 .png_trash/
 放图片说明.txt
 .img_backup_*/
+
+# 原始图备份目录（不要进部署，避免大图拖慢网页）
+images/_originals/
