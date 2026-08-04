@@ -65,26 +65,26 @@
     if (!listEl) return;
     listEl.innerHTML = '';
 
-    // 构建 DOM：图片先不加载（懒加载），真实地址存在 dataset.src
+    // 构建 DOM
     listEl._masonryItems = items.map(function (it, idx) {
       var wrap = document.createElement('div');
       wrap.className = 'masonry-item';
       wrap.setAttribute('data-key', it.id);
       var img = document.createElement('div');
       img.className = 'masonry-item-img';
-      img.dataset.src = it.img || '';
+      if (it.img) img.style.backgroundImage = 'url("' + it.img + '")';
       wrap.appendChild(img);
       wrap.addEventListener('click', function () {
         if (onItemClick) onItemClick(it.workKey);
       });
       listEl.appendChild(wrap);
-      return { id: it.id, img: it.img, workKey: it.workKey, span: spanFor(idx), el: wrap, imgEl: img, loaded: false };
+      return { id: it.id, img: it.img, workKey: it.workKey, span: spanFor(idx), el: wrap };
     });
 
     // 布局（同步，确保入场动画前位置已就绪）
     layout(listEl);
 
-    // 入场动画：模糊→清晰 + 从底部上浮 + 交错淡入（与图片加载解耦，位置先就位）
+    // 入场动画：模糊→清晰 + 从底部上浮 + 交错淡入
     if (gsap) {
       var els = listEl._masonryItems.map(function (it) { return it.el; });
       gsap.set(els, { opacity: 0, y: 90, filter: 'blur(10px)' });
@@ -96,32 +96,6 @@
         ease: 'power3.out',
         stagger: 0.06,
         overwrite: 'auto'
-      });
-    }
-
-    // 懒加载：进入视口（含提前 300px）才加载真实图，图片淡入
-    var itemsById = listEl._masonryItems;
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          var wrap = e.target;
-          var item = null;
-          for (var i = 0; i < itemsById.length; i++) { if (itemsById[i].el === wrap) { item = itemsById[i]; break; } }
-          if (item && !item.loaded && item.imgEl.dataset.src) {
-            var src = item.imgEl.dataset.src;
-            item.imgEl.style.backgroundImage = 'url("' + src + '")';
-            if (gsap) gsap.fromTo(item.imgEl, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' });
-            item.loaded = true;
-            io.unobserve(wrap);
-          }
-        });
-      }, { root: null, rootMargin: '300px 0px', threshold: 0 });
-      itemsById.forEach(function (it) { io.observe(it.el); });
-    } else {
-      // 不支持时直接全部加载
-      itemsById.forEach(function (it) {
-        if (it.imgEl.dataset.src) it.imgEl.style.backgroundImage = 'url("' + it.imgEl.dataset.src + '")';
       });
     }
 

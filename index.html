@@ -2183,10 +2183,6 @@ window.__EDIT_OVERRIDES__ = {
       function mediaSrc(folder, file) {
         return encodeURI('images/' + folder + file);
       }
-      // 首页瀑布流专用缩略图（限宽 800 / 质量 82，已在 images/_home/ 预生成，原图不动）
-      function homeThumbSrc(folder, file) {
-        return encodeURI('images/_home/' + folder + file);
-      }
       function folderName(folder) {
         return folder.replace(/\/$/, '').split('/').pop();
       }
@@ -2941,7 +2937,7 @@ window.__EDIT_OVERRIDES__ = {
           const d = workData[k];
           (d.main || []).forEach(f => {
             if (/\.(mp4|webm|mov|m4v|ogg)$/i.test(f)) return; // 跳过视频
-            allImages.push({ id: k + ':' + f, img: homeThumbSrc(d.folder, f), workKey: k });
+            allImages.push({ id: k + ':' + f, img: mediaSrc(d.folder, f), workKey: k });
           });
         });
         // Fisher-Yates 随机打散
