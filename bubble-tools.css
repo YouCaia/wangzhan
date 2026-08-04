@@ -1,0 +1,77 @@
+/* ============================================================
+   BubbleMenu 风格的工具 pill 矩阵（React Bits 动效移植）
+   用于 skills.html 软件矩阵下方，展示英文工具名。
+   ============================================================ */
+
+.tool-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.8rem;
+  padding: 0 0.5rem;
+}
+
+.tool-pill {
+  --pill-bg: rgba(20, 15, 9, 0.65);
+  --pill-color: #f0d089;
+  --pill-border: rgba(212, 168, 87, 0.28);
+  --hover-bg: #d4a857;
+  --hover-color: #1a130a;
+  --item-rot: 0deg;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.7rem, 1.6vw, 1.1rem) clamp(1.2rem, 3vw, 2.4rem);
+  font-size: clamp(0.85rem, 2vw, 1.15rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: var(--pill-bg);
+  color: var(--pill-color);
+  border: 1px solid var(--pill-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  will-change: transform;
+  cursor: default;
+}
+
+.tool-pill-label {
+  display: inline-block;
+  height: 1.2em;
+  line-height: 1.2;
+}
+
+/* 桌面端带轻微旋转 */
+@media (min-width: 900px) {
+  .tool-pill {
+    transform: rotate(var(--item-rot));
+  }
+  .tool-pill:hover {
+    transform: rotate(var(--item-rot)) scale(1.06);
+    background: var(--hover-bg);
+    color: var(--hover-color);
+    border-color: var(--hover-bg);
+  }
+  .tool-pill:active {
+    transform: rotate(var(--item-rot)) scale(0.94);
+  }
+}
+
+/* 移动端简化 */
+@media (max-width: 899px) {
+  .tool-pill:hover {
+    transform: scale(1.06);
+    background: var(--hover-bg);
+    color: var(--hover-color);
+    border-color: var(--hover-bg);
+  }
+  .tool-pill:active {
+    transform: scale(0.94);
+  }
+}
