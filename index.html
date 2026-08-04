@@ -10,6 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="lightbox.js"></script>
   <link rel="stylesheet" href="staggered-menu.css">
+  <link rel="stylesheet" href="masonry.css">
   <script>
     tailwind.config = {
       theme: {
@@ -1530,8 +1531,8 @@ window.__EDIT_OVERRIDES__ = {
         </p>
       </div>
 
-            <!-- 作品网格（动态渲染：renderHomeWorks 从 workData 生成真实缩略图卡片） -->
-      <div id="homeWorkGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 reveal-up" style="transition-delay: 0.1s;"></div>
+            <!-- 作品网格（动态渲染：renderHomeWorks 调用 Masonry 瀑布流） -->
+      <div id="homeWorkGrid" class="masonry-list"></div>
 
       <!-- 查看全部作品按钮 -->
       <div class="text-center mt-12 reveal-up" style="transition-delay: 0.3s;">
@@ -2934,28 +2935,39 @@ window.__EDIT_OVERRIDES__ = {
           }
         }
         grid.innerHTML = '';
-        selected.forEach(k => {
+        // 构造 Masonry 数据（封面取第一张图片，跳过视频）
+        const masonryItems = selected.map(k => {
           const d = workData[k];
-          // 取第一张“图片”作为封面（跳过视频，否则 <img> 加载 .mp4 失败会留白；works.html 早已如此处理）
           const firstImg = (d.main || []).find(f => !/\.(mp4|webm|mov|m4v|ogg)$/i.test(f));
           const thumb = firstImg ? mediaSrc(d.folder, firstImg) : '';
-          const card = document.createElement('div');
-          card.className = 'work-card';
-          card.innerHTML =
-            '<div class="work-thumb">' +
-              '<div class="work-thumb-bg"></div>' +
-              '<div class="work-thumb-glow"></div>' +
-              (thumb ? '<img class="work-thumb-img" src="' + thumb + '" alt="' + escapeHtml(d.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
-              '<span class="work-cat">' + escapeHtml(d.category || '') + '</span>' +
-              '<span class="work-hover-text">浏览作品 →</span>' +
-            '</div>' +
-            '<div class="work-info">' +
-              '<h3>' + escapeHtml(d.title) + '</h3>' +
-              '<p>' + escapeHtml(d.desc || '') + '</p>' +
-            '</div>';
-          card.addEventListener('click', () => openWorkDetail(k));
-          grid.appendChild(card);
-        });
+          return { id: k, img: thumb, workKey: k };
+        }).filter(it => it.img);
+
+        if (window.buildHomeMasonry) {
+          // 主路径：Masonry 瀑布流 + 黑白→彩色悬停
+          window.buildHomeMasonry(grid, masonryItems, openWorkDetail);
+        } else {
+          // 降级：masonry 脚本未加载时退回原卡片网格
+          masonryItems.forEach(it => {
+            const d = workData[it.workKey];
+            const card = document.createElement('div');
+            card.className = 'work-card';
+            card.innerHTML =
+              '<div class="work-thumb">' +
+                '<div class="work-thumb-bg"></div>' +
+                '<div class="work-thumb-glow"></div>' +
+                '<img class="work-thumb-img" src="' + it.img + '" alt="' + escapeHtml(d.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' +
+                '<span class="work-cat">' + escapeHtml(d.category || '') + '</span>' +
+                '<span class="work-hover-text">浏览作品 →</span>' +
+              '</div>' +
+              '<div class="work-info">' +
+                '<h3>' + escapeHtml(d.title) + '</h3>' +
+                '<p>' + escapeHtml(d.desc || '') + '</p>' +
+              '</div>';
+            card.addEventListener('click', () => openWorkDetail(it.workKey));
+            grid.appendChild(card);
+          });
+        }
       }
 
       async function openWorkDetail(workId) {
@@ -3005,7 +3017,9 @@ window.__EDIT_OVERRIDES__ = {
       }
 
       // 首页精选作品：动态渲染真实缩略图卡片（点击在 renderHomeWorks 内逐卡绑定）
-      renderHomeWorks();
+      // 等 GSAP 就位后再建 Masonry，保证入场动画可用（本 IIFE 在 vendor/gsap.min.js 之前执行）
+      if (window.gsap) renderHomeWorks();
+      else window.addEventListener('load', renderHomeWorks);
 
       // ===== 首页作品设置面板（与 renderHomeWorks 同作用域） =====
       function openHomeWorksPanel() {
@@ -3087,5 +3101,6 @@ window.__EDIT_OVERRIDES__ = {
   <script src="color-bends.js"></script>
   <script src="vendor/gsap.min.js"></script>
   <script src="staggered-menu.js"></script>
+  <script src="masonry-works.js"></script>
 </body>
 </html>

@@ -1,0 +1,34 @@
+/* ============================================================
+   首页作品区 Masonry（React Bits 原生移植 + 黑白→彩色悬停）
+   容器用 absolute 定位子项，高度由 JS 计算后写入。
+   ============================================================ */
+
+.masonry-list {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+}
+
+.masonry-item {
+  position: absolute;
+  padding: 8px;            /* 图片之间的视觉间距（上下左右一致） */
+  cursor: pointer;
+  will-change: transform, width, height, opacity, filter;
+}
+
+.masonry-item-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center center;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px -14px rgba(0, 0, 0, 0.55);
+  /* 默认黑白，悬停变回彩色 */
+  filter: grayscale(1);
+  transition: filter 0.55s ease;
+}
+
+.masonry-item:hover .masonry-item-img {
+  filter: grayscale(0);
+}
