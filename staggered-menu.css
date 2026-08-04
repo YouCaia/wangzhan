@@ -1,0 +1,246 @@
+/* ============================================================
+   StaggeredMenu — 金色主题（React Bits 组件的纯原生 JS 移植）
+   原组件依赖 React + gsap；此处用原生 JS 复刻同一套 GSAP 时间轴。
+   ============================================================ */
+
+.sm-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;   /* 仅按钮/面板可点，避免遮挡正文 */
+  overflow: hidden;
+}
+
+/* ---------- 顶部栏：Logo + 切换按钮 ---------- */
+.sm-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.6em 2.2em;
+  pointer-events: none;
+  z-index: 20;
+}
+.sm-header > * { pointer-events: auto; }
+
+.sm-logo {
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.28em;
+  text-decoration: none;
+  background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #d4a857;            /* 不支持 background-clip 时回退 */
+  user-select: none;
+}
+.sm-logo:hover { -webkit-text-fill-color: #f0d089; color: #f0d089; }
+
+.sm-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #f0d089;
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  padding: 0.4em 0.2em;
+}
+.sm-toggle:focus-visible {
+  outline: 2px solid rgba(240, 208, 137, 0.6);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.sm-toggle-textWrap {
+  position: relative;
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sm-toggle-textInner {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.sm-toggle-line {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+.sm-icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.sm-icon-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+}
+.sm-icon-line-v { transform: translate(-50%, -50%) rotate(90deg); }
+
+/* ---------- 滑入前的彩色底层（金色层） ---------- */
+.sm-prelayers {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: clamp(280px, 40vw, 460px);
+  pointer-events: none;
+  z-index: 5;
+}
+.sm-wrapper[data-position="left"] .sm-prelayers { right: auto; left: 0; }
+
+.sm-prelayer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  will-change: transform;
+}
+
+/* ---------- 主面板 ---------- */
+.sm-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: clamp(280px, 40vw, 460px);
+  height: 100%;
+  background: rgba(18, 14, 9, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-left: 1px solid rgba(212, 168, 87, 0.18);
+  display: flex;
+  flex-direction: column;
+  padding: 7em 2.2em 2.2em;
+  overflow-y: auto;
+  z-index: 10;
+  pointer-events: auto;
+  opacity: 0;                 /* 由 GSAP 接管显隐 */
+}
+.sm-wrapper[data-position="left"] .sm-panel {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid rgba(212, 168, 87, 0.18);
+}
+
+.sm-panel-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.sm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  counter-reset: smItem;
+}
+.sm-itemWrap {
+  position: relative;
+  overflow: hidden;
+  line-height: 1;
+}
+.sm-item {
+  position: relative;
+  display: inline-block;
+  color: #f3e6c8;
+  font-weight: 600;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding-right: 1.8em;
+  transition: color 0.25s;
+}
+.sm-item:hover { color: #f0d089; }
+.sm-itemLabel {
+  display: inline-block;
+  will-change: transform;
+  transform-origin: 50% 100%;
+}
+.sm-list[data-numbering] .sm-item::after {
+  counter-increment: smItem;
+  content: counter(smItem, decimal-leading-zero);
+  position: absolute;
+  top: 0.15em;
+  right: 0;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #c98a3b;
+  letter-spacing: 0;
+  pointer-events: none;
+  opacity: var(--sm-num-opacity, 0);
+}
+
+/* ---------- 社交链接 ---------- */
+.sm-socials {
+  margin-top: auto;
+  padding-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.sm-socials-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #c98a3b;
+  letter-spacing: 0.12em;
+}
+.sm-socials-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+}
+.sm-socials-link {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #e9d9b5;
+  text-decoration: none;
+  position: relative;
+  padding: 2px 0;
+  transition: color 0.3s, opacity 0.3s;
+}
+.sm-socials-list:hover .sm-socials-link { opacity: 0.35; }
+.sm-socials-list:hover .sm-socials-link:hover { opacity: 1; color: #f0d089; }
+
+/* ---------- 降级方案：GSAP 未加载时仍能开关 ---------- */
+.sm-wrapper.sm-open .sm-panel { transform: translateX(0) !important; opacity: 1 !important; }
+.sm-wrapper.sm-open .sm-prelayer { transform: translateX(0) !important; opacity: 1 !important; }
+
+@media (max-width: 640px) {
+  .sm-panel { width: 100%; left: 0; right: 0; }
+  .sm-prelayers { width: 100%; left: 0; right: 0; }
+  .sm-header { padding: 1.3em 1.4em; }
+}

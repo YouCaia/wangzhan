@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="lightbox.js"></script>
+  <link rel="stylesheet" href="staggered-menu.css">
   <script>
     tailwind.config = {
       theme: {
@@ -1236,6 +1237,32 @@ window.__EDIT_OVERRIDES__ = {
 </head>
 <body>
 
+  <!-- ===== StaggeredMenu 金色错峰导航（原生 JS 移植自 React Bits） ===== -->
+  <div class="sm-wrapper" id="sm-root" data-position="right">
+    <div class="sm-prelayers" id="sm-prelayers" aria-hidden="true"></div>
+    <header class="sm-header">
+      <a href="index.html" class="sm-logo" aria-label="YOUCAI 首页">YOUCAI</a>
+      <button class="sm-toggle" id="sm-toggle" aria-label="打开菜单" aria-expanded="false" aria-controls="sm-panel" type="button">
+        <span class="sm-toggle-textWrap" aria-hidden="true">
+          <span class="sm-toggle-textInner" id="sm-textInner"><span class="sm-toggle-line">菜单</span></span>
+        </span>
+        <span class="sm-icon" id="sm-icon" aria-hidden="true">
+          <span class="sm-icon-line" id="sm-plusH"></span>
+          <span class="sm-icon-line sm-icon-line-v" id="sm-plusV"></span>
+        </span>
+      </button>
+    </header>
+    <aside class="sm-panel" id="sm-panel" aria-hidden="true">
+      <div class="sm-panel-inner">
+        <ul class="sm-list" id="sm-list" role="list"></ul>
+        <div class="sm-socials" id="sm-socials">
+          <h3 class="sm-socials-title">社交</h3>
+          <ul class="sm-socials-list" id="sm-socials-list" role="list"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
   <!-- Background layers -->
   <div class="bokeh-layer">
     <div class="bokeh-orb orb-1"></div>
@@ -1306,39 +1333,7 @@ window.__EDIT_OVERRIDES__ = {
     <div class="hero-panel-wrapper" style="transition: transform 0.1s linear;">
       <div class="glass-panel w-full max-w-5xl rounded-[2.5rem] scale-in" style="animation-delay: 0.2s;">
 
-      <!-- ===== 顶部导航栏 ===== -->
-      <nav class="flex items-center justify-between px-8 sm:px-12 pt-8 pb-6 fade-in-up" style="animation-delay: 0.4s;">
-        <!-- 左侧品牌名 -->
-        <a href="#hero" class="font-bold text-lg tracking-[0.2em] text-white">
-          YOUCAI
-        </a>
-        <!-- 右侧导航菜单 -->
-        <div class="hidden md:flex items-center gap-8">
-          <a href="#hero" class="nav-link active text-sm font-light">首页</a>
-          <a href="#skills" class="nav-link text-sm font-light text-white/70">技能</a>
-          <a href="#works" class="nav-link text-sm font-light text-white/70">作品</a>
-          <a href="#process" class="nav-link text-sm font-light text-white/70">流程</a>
-          <a href="#contact" class="nav-link text-sm font-light text-white/70">联系</a>
-        </div>
-        <!-- 移动端菜单按钮 -->
-        <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
-            <line x1="3" y1="7" x2="21" y2="7"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="17" x2="21" y2="17"/>
-          </svg>
-        </button>
-      </nav>
 
-      <!-- 移动端全屏菜单 -->
-      <div id="mobileMenu" class="mobile-menu">
-        <button id="mobileMenuClose" class="mobile-menu-close" aria-label="关闭">&times;</button>
-        <a href="#hero">首页</a>
-        <a href="#skills">技能</a>
-        <a href="#works">作品</a>
-        <a href="#process">流程</a>
-        <a href="#contact">联系</a>
-      </div>
 
       <div class="gold-divider mx-8 sm:mx-12 fade-in" style="animation-delay: 0.6s;"></div>
 
@@ -1850,30 +1845,6 @@ window.__EDIT_OVERRIDES__ = {
       animate();
     })();
 
-    // ============================================
-    // Nav active state on scroll
-    // ============================================
-    (function() {
-      const sections = document.querySelectorAll('section[id]');
-      const navLinks = document.querySelectorAll('.nav-link');
-
-      function updateActive() {
-        const scrollY = window.scrollY + window.innerHeight / 3;
-        let current = '';
-        sections.forEach(section => {
-          if (scrollY >= section.offsetTop) current = section.id;
-        });
-        navLinks.forEach(link => {
-          link.classList.remove('active');
-          link.classList.add('text-white/70');
-          if (link.getAttribute('href') === '#' + current) {
-            link.classList.add('active');
-            link.classList.remove('text-white/70');
-          }
-        });
-      }
-      window.addEventListener('scroll', updateActive);
-    })();
 
     // ============================================
     // Scroll reveal
@@ -2013,22 +1984,6 @@ window.__EDIT_OVERRIDES__ = {
           }
         });
       });
-    })();
-
-    // ============================================
-    // Mobile menu toggle
-    // ============================================
-    (function() {
-      const btn = document.getElementById('mobileMenuBtn');
-      const menu = document.getElementById('mobileMenu');
-      const close = document.getElementById('mobileMenuClose');
-      if (!btn || !menu) return;
-      function openMenu() { menu.classList.add('open'); document.body.style.overflow = 'hidden'; }
-      function shutMenu() { menu.classList.remove('open'); document.body.style.overflow = ''; }
-      btn.addEventListener('click', () => { menu.classList.contains('open') ? shutMenu() : openMenu(); });
-      if (close) close.addEventListener('click', shutMenu);
-      menu.querySelectorAll('a').forEach(a => a.addEventListener('click', shutMenu));
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) shutMenu(); });
     })();
 
     // ============================================
@@ -3132,5 +3087,7 @@ window.__EDIT_OVERRIDES__ = {
   </script>
   <script src="water-bg.js"></script>
   <script src="color-bends.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="staggered-menu.js"></script>
 </body>
 </html>
