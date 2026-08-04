@@ -1305,8 +1305,8 @@ window.__EDIT_OVERRIDES__ = {
         <label class="hwp-radio"><input type="radio" name="hwMode" value="random"> 随机</label>
       </div>
       <div class="hwp-row">
-        <span class="hwp-label">展示数量</span>
-        <input type="number" id="hwCount" class="hwp-count" min="1" max="20" value="6">
+        <span class="hwp-label">展示图片数</span>
+        <input type="number" id="hwCount" class="hwp-count" min="1" max="40" value="15">
       </div>
       <div class="hwp-row hwp-picks-wrap">
         <span class="hwp-label">挑选作品（手动模式）</span>
@@ -2899,13 +2899,18 @@ window.__EDIT_OVERRIDES__ = {
       }
 
       // ===== 首页精选作品：动态渲染 + 选择/随机配置 =====
-      const HOME_WORKS_CONFIG = { mode: 'manual', count: 6, picks: [] };
+      const HOME_WORKS_CONFIG = { mode: 'manual', count: 15, picks: [], ver: 2 };
       function getHomeConfig() {
         try {
           const ls = JSON.parse(localStorage.getItem('youcai_home_works') || 'null');
-          if (ls && typeof ls === 'object') return Object.assign({ mode: 'manual', count: 6, picks: [] }, ls);
+          if (ls && typeof ls === 'object') {
+            const cfg = Object.assign({ mode: 'manual', count: 15, picks: [], ver: 2 }, ls);
+            // 旧版配置：count 表示“作品数”(默认6)，现统一为“图片数”，至少 15 张
+            if (!ls.ver) cfg.count = Math.max(cfg.count || 6, 15);
+            return cfg;
+          }
         } catch (e) {}
-        if (window.__HOME_WORKS__) return Object.assign({ mode: 'manual', count: 6, picks: [] }, window.__HOME_WORKS__);
+        if (window.__HOME_WORKS__) return Object.assign({ mode: 'manual', count: 15, picks: [], ver: 2 }, window.__HOME_WORKS__);
         return Object.assign({}, HOME_WORKS_CONFIG);
       }
       function escapeHtml(s) {
@@ -2916,32 +2921,31 @@ window.__EDIT_OVERRIDES__ = {
         if (!grid) return;
         const cfg = getHomeConfig();
         const keys = Object.keys(workData).filter(k => workData[k] && workData[k].folder);
-        let selected;
+        // 确定“作品来源范围”：manual 取勾选作品；random 取全部作品（随后随机抽图）
+        let sourceWorks;
         if (cfg.mode === 'random') {
-          const pool = keys.slice();
-          for (let i = pool.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [pool[i], pool[j]] = [pool[j], pool[i]];
-          }
-          selected = pool.slice(0, Math.max(1, cfg.count || 6));
+          sourceWorks = keys.slice();
         } else {
           const picks = (cfg.picks && cfg.picks.length) ? cfg.picks : keys;
-          selected = picks.filter(k => workData[k] && workData[k].folder);
-          if (selected.length < (cfg.count || 6)) {
-            const extra = keys.filter(k => !selected.includes(k));
-            selected = selected.concat(extra).slice(0, cfg.count || 6);
-          } else {
-            selected = selected.slice(0, cfg.count || 6);
-          }
+          sourceWorks = picks.filter(k => workData[k] && workData[k].folder);
         }
         grid.innerHTML = '';
-        // 构造 Masonry 数据（封面取第一张图片，跳过视频）
-        const masonryItems = selected.map(k => {
+        // 构造 Masonry 数据：汇集来源作品【全部】主图（跳过视频），随机打散后取 count 张
+        // —— 不限于第一张，满足“随机读取文件夹内图片”的需求
+        const allImages = [];
+        sourceWorks.forEach(k => {
           const d = workData[k];
-          const firstImg = (d.main || []).find(f => !/\.(mp4|webm|mov|m4v|ogg)$/i.test(f));
-          const thumb = firstImg ? mediaSrc(d.folder, firstImg) : '';
-          return { id: k, img: thumb, workKey: k };
-        }).filter(it => it.img);
+          (d.main || []).forEach(f => {
+            if (/\.(mp4|webm|mov|m4v|ogg)$/i.test(f)) return; // 跳过视频
+            allImages.push({ id: k + ':' + f, img: mediaSrc(d.folder, f), workKey: k });
+          });
+        });
+        // Fisher-Yates 随机打散
+        for (let i = allImages.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allImages[i], allImages[j]] = [allImages[j], allImages[i]];
+        }
+        const masonryItems = allImages.slice(0, Math.max(1, cfg.count || 15));
 
         if (window.buildHomeMasonry) {
           // 主路径：Masonry 瀑布流 + 黑白→彩色悬停
@@ -3028,7 +3032,7 @@ window.__EDIT_OVERRIDES__ = {
         panel.classList.toggle('mode-random', cfg.mode === 'random');
         const modeRadio = panel.querySelector('input[name="hwMode"][value="' + cfg.mode + '"]');
         if (modeRadio) modeRadio.checked = true;
-        const cnt = document.getElementById('hwCount'); if (cnt) cnt.value = cfg.count || 6;
+        const cnt = document.getElementById('hwCount'); if (cnt) cnt.value = cfg.count || 15;
         const picksBox = document.getElementById('hwPicks');
         if (picksBox) {
           picksBox.innerHTML = '';
@@ -3052,12 +3056,12 @@ window.__EDIT_OVERRIDES__ = {
       }
       function applyHomeWorks() {
         const mode = document.querySelector('input[name="hwMode"]:checked');
-        const count = parseInt(document.getElementById('hwCount').value, 10) || 6;
+        const count = parseInt(document.getElementById('hwCount').value, 10) || 15;
         const picks = [];
         if (mode && mode.value === 'manual') {
           document.querySelectorAll('#hwPicks input[type="checkbox"]').forEach(cb => { if (cb.checked) picks.push(cb.value); });
         }
-        const cfg = { mode: (mode ? mode.value : 'manual'), count: count, picks: picks };
+        const cfg = { mode: (mode ? mode.value : 'manual'), count: count, picks: picks, ver: 2 };
         try { localStorage.setItem('youcai_home_works', JSON.stringify(cfg)); } catch (e) {}
         renderHomeWorks();
         const b = document.getElementById('hwApply');
