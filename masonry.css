@@ -24,6 +24,8 @@
   background-position: center center;
   border-radius: 12px;
   box-shadow: 0 12px 40px -14px rgba(0, 0, 0, 0.55);
+  /* 懒加载前的占位色（淡淡的金），图片到达后由 background-image 覆盖 */
+  background-color: rgba(212, 168, 87, 0.06);
   /* 默认黑白，悬停变回彩色 */
   filter: grayscale(1);
   transition: filter 0.55s ease;
