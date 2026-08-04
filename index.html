@@ -10,7 +10,57 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="lightbox.js"></script>
   <link rel="stylesheet" href="staggered-menu.css">
-  <link rel="stylesheet" href="loader.css">
+  <style>
+  /* 首页加载动画（样式内联，避免依赖跨境外部 CSS，HTML 一解析即生效） */
+  #page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 38%, #1a140c 0%, #0c0905 72%);
+    transition: opacity 0.6s ease;
+    -webkit-transition: opacity 0.6s ease;
+  }
+  #page-loader.pl-done { opacity: 0; pointer-events: none; }
+  .pl-inner { text-align: center; padding: 2rem; width: 100%; }
+  .pl-logo {
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    font-weight: 800;
+    letter-spacing: 0.35em;
+    color: #d9b24c;
+    text-shadow: 0 0 26px rgba(217, 178, 76, 0.35);
+    margin: 0 0 0.7rem;
+    padding-left: 0.35em;
+  }
+  .pl-sub { font-size: 0.95rem; letter-spacing: 0.18em; color: #b89a5e; margin: 0 0 2rem; }
+  .pl-track {
+    width: min(280px, 72vw);
+    height: 4px;
+    margin: 0 auto;
+    background: rgba(217, 178, 76, 0.16);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .pl-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #b8862f, #f0d089, #b8862f);
+    background-size: 200% 100%;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+    -webkit-transition: width 0.3s ease;
+    box-shadow: 0 0 12px rgba(240, 208, 137, 0.5);
+    animation: pl-shimmer 1.4s linear infinite;
+  }
+  @keyframes pl-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .pl-pct { margin-top: 1rem; font-size: 0.85rem; letter-spacing: 0.15em; color: #d9b24c; }
+  .pl-hint { margin-top: 0.4rem; font-size: 0.72rem; letter-spacing: 0.1em; color: rgba(184, 154, 94, 0.6); }
+  </style>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="masonry.css">
   <script>
@@ -1239,7 +1289,7 @@ window.__EDIT_OVERRIDES__ = {
 };</script>
 </head>
 <body>
-  <!-- 首页加载动画：真实预加载图片，进度满后淡出（详见 loader.js） -->
+  <!-- 首页加载动画：真实预加载图片，进度满后淡出（逻辑见下方内联脚本） -->
   <div id="page-loader">
     <div class="pl-inner">
       <div class="pl-logo">YOUCAI</div>
@@ -1249,14 +1299,73 @@ window.__EDIT_OVERRIDES__ = {
       <div class="pl-hint">首次访问需从服务器加载图片，请稍候</div>
     </div>
   </div>
-  <!-- 内联兜底：即使外部 loader.js 加载失败，15s 后也强制隐藏遮罩，避免永久白屏 -->
+  <!-- 加载动画控制器（逻辑内联，HTML 解析即启动平滑进度，不依赖跨境外部脚本） -->
   <script>
+  (function () {
+    var overlay, barEl, pctEl, hidden = false, smoothTimer = null;
+    var realFrac = 0.02, visualFrac = 0.02, finished = false;
+    function cache() {
+      overlay = document.getElementById('page-loader');
+      barEl = document.getElementById('pl-bar');
+      pctEl = document.getElementById('pl-pct');
+    }
+    function applyBar(frac) {
+      var v = Math.max(0, Math.min(100, Math.round(frac * 100)));
+      if (barEl) barEl.style.width = v + '%';
+      if (pctEl) pctEl.textContent = v + '%';
+    }
+    function startSmooth() {
+      if (smoothTimer) return;
+      cache();
+      smoothTimer = setInterval(function () {
+        if (finished) return;
+        var target = Math.min(realFrac + 0.12, 0.9);
+        visualFrac += (target - visualFrac) * 0.12 + 0.004;
+        if (visualFrac > 0.9) visualFrac = 0.9;
+        applyBar(visualFrac);
+      }, 100);
+    }
+    function hide() {
+      if (!overlay) cache();
+      if (!overlay || hidden) return;
+      hidden = true; finished = true;
+      if (smoothTimer) { clearInterval(smoothTimer); smoothTimer = null; }
+      if (overlay.classList.contains('pl-done')) return;
+      overlay.classList.add('pl-done');
+      setTimeout(function () { if (overlay) overlay.style.display = 'none'; }, 700);
+    }
+    function preload(urls, onComplete) {
+      cache();
+      if (!urls || !urls.length) { complete(); return; }
+      var total = urls.length, loaded = 0;
+      function complete() {
+        if (finished) { if (onComplete) onComplete(); return; }
+        finished = true;
+        if (smoothTimer) { clearInterval(smoothTimer); smoothTimer = null; }
+        visualFrac = 1; realFrac = 1; applyBar(1);
+        if (onComplete) onComplete();
+      }
+      function tick() { loaded++; realFrac = loaded / total; if (loaded >= total) complete(); }
+      urls.forEach(function (u) {
+        var im = new Image();
+        im.onload = tick; im.onerror = tick; im.src = u;
+      });
+      setTimeout(complete, 10000);
+    }
+    window.YCPreloader = {
+      run: function (urls, onComplete) {
+        cache(); applyBar(0.02); startSmooth();
+        preload(urls, function () { if (onComplete) onComplete(); setTimeout(hide, 300); });
+      },
+      hide: hide
+    };
+    // 立即开始平滑流动（不等外部脚本 / load 事件）
+    startSmooth();
+    // 全局兜底：14s 后仍在则强制隐藏，避免永久白屏
     window.addEventListener('load', function () {
-      setTimeout(function () {
-        var o = document.getElementById('page-loader');
-        if (o && !o.classList.contains('pl-done')) o.style.display = 'none';
-      }, 15000);
+      setTimeout(function () { if (overlay && !overlay.classList.contains('pl-done')) hide(); }, 14000);
     });
+  })();
   </script>
 
   <!-- ===== StaggeredMenu 金色错峰导航（原生 JS 移植自 React Bits） ===== -->
@@ -3137,6 +3246,5 @@ window.__EDIT_OVERRIDES__ = {
   <script src="vendor/gsap.min.js"></script>
   <script src="staggered-menu.js"></script>
   <script src="masonry-works.js"></script>
-  <script src="loader.js"></script>
 </body>
 </html>
