@@ -830,44 +830,7 @@
       background: rgba(212, 168, 87, 0.4);
     }
 
-    /* ========== Hero background & panel scroll ========== */
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      overflow: hidden;
-      border-radius: 0;
-    }
-    .hero-bg img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      opacity: 0.55;
-      will-change: opacity;
-      animation: heroBgZoom 24s ease-in-out infinite alternate;
-    }
-    .hero-bg img#hero-bg-2 {
-      opacity: 0;
-      animation-delay: -12s;
-    }
-    @keyframes heroBgZoom {
-      0%   { transform: scale(1) translateY(0); }
-      100% { transform: scale(1.1) translateY(-2%); }
-    }
-    .hero-bg-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(10, 10, 10, 0.15) 0%,
-        rgba(10, 10, 10, 0.35) 50%,
-        rgba(10, 10, 10, 0.7) 100%
-      );
-      pointer-events: none;
-    }
+    /* ========== Hero panel scroll ========== */
     .hero-panel-wrapper {
       position: relative;
       z-index: 10;
@@ -1338,13 +1301,6 @@ window.__EDIT_OVERRIDES__ = {
   <!-- 第一屏：Hero 毛玻璃面板 -->
   <!-- ===================================================== -->
   <section id="hero" class="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-36 pb-14 min-h-[92vh]">
-
-    <!-- 16:9 Hero 背景图（双图交叉淡入） -->
-    <div class="hero-bg">
-      <img src="images/hero-bg.jpg?v=2" alt="hero background 1" id="hero-bg-1">
-      <img src="images/hero-bg-2.jpg?v=2" alt="hero background 2" id="hero-bg-2">
-      <div class="hero-bg-overlay"></div>
-    </div>
 
     <!-- 毛玻璃面板 wrapper -->
     <div class="hero-panel-wrapper" style="transition: transform 0.1s linear;">
@@ -2122,44 +2078,6 @@ window.__EDIT_OVERRIDES__ = {
         });
       }, { threshold: 0.5 });
       counters.forEach(c => observer.observe(c));
-    })();
-
-    // ============================================
-    // Hero panel scroll parallax + background crossfade
-    // ============================================
-    (function() {
-      const wrapper = document.querySelector('.hero-panel-wrapper');
-      const bg1 = document.getElementById('hero-bg-1');
-      const bg2 = document.getElementById('hero-bg-2');
-      if (!wrapper) return;
-
-      const BG_OPACITY = 0.55;   // 背景图基础透明度
-      const FADE_RANGE = 800;     // 交叉淡入完成的滚动距离(px)
-      const MAX_SHIFT  = 220;     // 面板最大左移(px)
-
-      let ticking = false;
-
-      function update() {
-        const scrollY = window.scrollY;
-
-        // 背景交叉淡入（仅背景做视差，主面板保持静止，避免整块左移露出空白）
-        if (bg1 && bg2) {
-          const progress = Math.min(scrollY / FADE_RANGE, 1);
-          bg1.style.opacity = BG_OPACITY * (1 - progress);
-          bg2.style.opacity = BG_OPACITY * progress;
-        }
-
-        ticking = false;
-      }
-
-      window.addEventListener('scroll', function() {
-        if (!ticking) {
-          window.requestAnimationFrame(update);
-          ticking = true;
-        }
-      }, { passive: true });
-
-      update();
     })();
 
     // ============================================

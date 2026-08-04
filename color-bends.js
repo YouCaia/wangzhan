@@ -143,21 +143,21 @@
     '}'
   ].join('\n');
 
-  // —— 配置（金色主题 + 轻量） ——
+  // —— 配置（暗金主题 + 轻量、低曝光） ——
   var cfg = {
-    colors: ['#f0d089', '#d4af37', '#b8860b', '#8a6d3b'], // 浅金 / 金 / 暗金 / 古铜
+    colors: ['#c9a66b', '#a8823a', '#7a5e2e', '#4f3b20'], // 暗金 / 金褐 / 铜棕 / 深棕
     rotation: 90,
-    speed: 0.15,
+    speed: 0.10,
     autoRotate: 0,
-    scale: 1,
-    frequency: 1,
-    warpStrength: 1,
-    mouseInfluence: 0.6,
-    parallax: 0.3,
-    noise: 0.1,
+    scale: 1.05,
+    frequency: 0.75,
+    warpStrength: 0.85,
+    mouseInfluence: 0.35,
+    parallax: 0.2,
+    noise: 0.08,
     iterations: 1,
-    intensity: 1.25,
-    bandWidth: 6,
+    intensity: 0.55,
+    bandWidth: 4.5,
     transparent: true
   };
 
