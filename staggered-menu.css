@@ -245,15 +245,18 @@
 .sm-popup-box {
   position: relative;
   z-index: 1;
-  min-width: 280px;
+  min-width: 260px;
   max-width: 90vw;
-  background: linear-gradient(160deg, #221a10, #15100a);
-  border: 1px solid rgba(212, 168, 87, 0.35);
+  background: linear-gradient(160deg, rgba(34, 26, 16, 0.72), rgba(21, 16, 10, 0.6));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 168, 87, 0.3);
   border-radius: 16px;
-  padding: 2.2rem 2rem 1.8rem;
+  padding: 2.4rem 2rem 2rem;
   text-align: center;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
+.sm-popup-box.sm-popup-copyable { cursor: pointer; }
 .sm-popup-close {
   position: absolute;
   top: 0.7rem;
@@ -262,7 +265,7 @@
   height: 32px;
   background: none;
   border: none;
-  color: #c98a3b;
+  color: rgba(201, 138, 59, 0.7);
   font-size: 1.6rem;
   line-height: 1;
   cursor: pointer;
@@ -270,32 +273,30 @@
   transition: color 0.2s, background 0.2s;
 }
 .sm-popup-close:hover { color: #f0d089; background: rgba(212, 168, 87, 0.12); }
-.sm-popup-title {
-  margin: 0 0 0.8rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: #c98a3b;
-}
 .sm-popup-text {
-  margin: 0 0 1.4rem;
-  font-size: 1.15rem;
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: #f3e6c8;
   word-break: break-all;
 }
-.sm-popup-copy {
-  background: linear-gradient(135deg, #d4a857, #b8862f);
-  border: none;
-  color: #1a130a;
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  padding: 0.6em 1.8em;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: filter 0.2s;
+.sm-popup-toast {
+  position: absolute;
+  bottom: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: #f0d089;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
 }
-.sm-popup-copy:hover { filter: brightness(1.1); }
+.sm-popup-box.sm-popup-copied .sm-popup-toast {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 /* ---------- 降级方案：GSAP 未加载时仍能开关 ---------- */
 .sm-wrapper.sm-open .sm-panel { transform: translateX(0) !important; opacity: 1 !important; }

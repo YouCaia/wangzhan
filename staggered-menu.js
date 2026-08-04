@@ -27,11 +27,11 @@
       { label: '信息', ariaLabel: '关于我的详细信息', link: 'info.html' },
       { label: '联系', ariaLabel: '查看联系方式', link: 'contact.html' }
     ],
-    // 社交：点击弹窗。display=弹窗正文，copy=可复制内容（为空则不显示复制按钮）
+    // 社交：点击弹窗。display=弹窗中显示的值（无前缀、无标题），copy=双击复制的内容（为空则不可复制）
     socialItems: [
-      { label: '微信', display: '微信号：ZhangdeShuaideZYC', copy: 'ZhangdeShuaideZYC' },
-      { label: '小红书', display: '小红书：暂未注册', copy: '' },
-      { label: '抖音', display: '抖音：暂未注册', copy: '' },
+      { label: '微信', display: 'ZhangdeShuaideZYC', copy: 'ZhangdeShuaideZYC' },
+      { label: '小红书', display: '暂未注册', copy: '' },
+      { label: '抖音', display: '暂未注册', copy: '' },
       { label: '邮箱', display: '1725067686@qq.com', copy: '1725067686@qq.com' }
     ],
     displaySocials: true,
@@ -116,26 +116,25 @@
   popup.setAttribute('aria-hidden', 'true');
   popup.innerHTML =
     '<div class="sm-popup-backdrop" id="sm-popup-backdrop"></div>' +
-    '<div class="sm-popup-box" role="dialog" aria-modal="true">' +
+    '<div class="sm-popup-box" role="dialog" aria-modal="true" id="sm-popup-box">' +
       '<button class="sm-popup-close" id="sm-popup-close" aria-label="关闭">&times;</button>' +
-      '<h3 class="sm-popup-title" id="sm-popup-title"></h3>' +
       '<p class="sm-popup-text" id="sm-popup-text"></p>' +
-      '<button class="sm-popup-copy" id="sm-popup-copy">复制</button>' +
+      '<span class="sm-popup-toast" id="sm-popup-toast">已复制</span>' +
     '</div>';
   root.appendChild(popup);
   var popupBackdrop = popup.querySelector('#sm-popup-backdrop');
-  var popupTitle = popup.querySelector('#sm-popup-title');
+  var popupBox = popup.querySelector('#sm-popup-box');
   var popupText = popup.querySelector('#sm-popup-text');
-  var popupCopy = popup.querySelector('#sm-popup-copy');
+  var popupToast = popup.querySelector('#sm-popup-toast');
   var popupClose = popup.querySelector('#sm-popup-close');
   var popupCopyValue = '';
+  var popupToastTimer = null;
 
-  function openPopup(label, display, copy) {
-    popupTitle.textContent = label;
+  function openPopup(display, copy) {
     popupText.textContent = display;
     popupCopyValue = copy || '';
-    if (popupCopyValue) { popupCopy.style.display = ''; popupCopy.textContent = '复制'; }
-    else { popupCopy.style.display = 'none'; }
+    if (popupCopyValue) popupBox.classList.add('sm-popup-copyable');
+    else popupBox.classList.remove('sm-popup-copyable');
     popup.classList.add('sm-popup-open');
     popup.setAttribute('aria-hidden', 'false');
   }
@@ -160,19 +159,27 @@
       fallback();
     }
   }
+  function showToast() {
+    if (!popupCopyValue) return;
+    popupBox.classList.add('sm-popup-copied');
+    if (popupToastTimer) clearTimeout(popupToastTimer);
+    popupToastTimer = setTimeout(function () {
+      popupBox.classList.remove('sm-popup-copied');
+    }, 1300);
+  }
 
   socialsList.querySelectorAll('.sm-socials-link').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      openPopup(btn.getAttribute('data-label'), btn.getAttribute('data-display'), btn.getAttribute('data-copy'));
+      openPopup(btn.getAttribute('data-display'), btn.getAttribute('data-copy'));
     });
   });
   popupClose.addEventListener('click', closePopup);
   popupBackdrop.addEventListener('click', closePopup);
-  popupCopy.addEventListener('click', function () {
+  // 双击弹窗内容即复制（仅当存在可复制内容）
+  popupBox.addEventListener('dblclick', function () {
     if (!popupCopyValue) return;
     copyText(popupCopyValue);
-    popupCopy.textContent = '已复制 ✓';
-    setTimeout(function () { popupCopy.textContent = '复制'; }, 1500);
+    showToast();
   });
 
   /* ---------- 降级：没有 GSAP 也能开合（靠 .sm-open 类 + CSS） ---------- */
