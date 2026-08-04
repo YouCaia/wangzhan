@@ -143,22 +143,24 @@
     '}'
   ].join('\n');
 
-  // —— 配置（金色主题 + 轻量、清晰但不刺眼） ——
-  // 关键：intensity 保持在 <1 且配色最高亮度 <0.95，避免高光被 clamp 成纯白（之前的过曝就源于此）
+  // —— 配置：对齐 React Bits 官方示例，颜色改用高饱和金色霓虹 ——
+  // 官方示例参数：speed 0.2 / frequency 1 / warpStrength 1 / mouseInfluence 1 /
+  // parallax 0.5 / noise 0.15 / intensity 1.5 / bandWidth 6 / scale 1
+  // 为避免金色中出现死白，蓝色通道保持接近 0，让高光呈现亮金/橙金而非纯白
   var cfg = {
-    colors: ['#e8c98a', '#caa24f', '#9c7836', '#6b4f26'], // 暖金 / 金 / 暗金 / 铜棕
+    colors: ['#ffdf4d', '#ffb800', '#ff9500', '#cc5200'], // 亮金 / 金黄 / 橙金 / 深橙金
     rotation: 90,
-    speed: 0.13,
+    speed: 0.2,
     autoRotate: 0,
-    scale: 1.0,
-    frequency: 0.8,
-    warpStrength: 1.0,
-    mouseInfluence: 0.4,
-    parallax: 0.25,
-    noise: 0.12,
+    scale: 1,
+    frequency: 1,
+    warpStrength: 1,
+    mouseInfluence: 1,
+    parallax: 0.5,
+    noise: 0.15,
     iterations: 1,
-    intensity: 0.95,
-    bandWidth: 5,
+    intensity: 1.5,
+    bandWidth: 6,
     transparent: true
   };
 
