@@ -35,7 +35,6 @@
     width: 100%;
     height: 100%;
     opacity: 0;
-    filter: brightness(0.72) saturate(0.82);
     transition: opacity 1.2s ease;
     -webkit-transition: opacity 1.2s ease;
   }
@@ -1507,7 +1506,7 @@ window.__EDIT_OVERRIDES__ = {
       ['uTime', 'uAttenuation', 'uResolution', 'uColor', 'uColorTwo', 'uLineThickness', 'uBaseRadius', 'uRadiusStep', 'uScaleRate', 'uRingCount', 'uOpacity', 'uNoiseAmount', 'uRotation', 'uRingGap', 'uFadeIn', 'uFadeOut', 'uMouse', 'uMouseInfluence', 'uHoverAmount', 'uHoverScale', 'uParallax', 'uBurst'].forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
 
       function hexRgb(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16) / 255, parseInt(h.substr(2, 2), 16) / 255, parseInt(h.substr(4, 2), 16) / 255]; }
-      var colA = hexRgb('#d9b24c'), colB = hexRgb('#b8862f');
+      var colA = hexRgb('#ffe7b0'), colB = hexRgb('#e1bd27');
 
       gl.clearColor(0, 0, 0, 0);
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1522,27 +1521,34 @@ window.__EDIT_OVERRIDES__ = {
       window.addEventListener('resize', resize);
       if (window.ResizeObserver) { try { new ResizeObserver(resize).observe(canvas); } catch (e) {} }
 
+      var mouseX = 0, mouseY = 0, smoothX = 0, smoothY = 0;
+      window.addEventListener('mousemove', function (e) {
+        mouseX = (e.clientX / window.innerWidth) - 0.5;
+        mouseY = -((e.clientY / window.innerHeight) - 0.5);
+      });
       var ready = false;
       function frame(t) {
         var time = (t || performance.now()) * 0.001;
+        smoothX += (mouseX - smoothX) * 0.08;
+        smoothY += (mouseY - smoothY) * 0.08;
         gl.uniform1f(U.uTime, time * 1.0);
-        gl.uniform1f(U.uAttenuation, 7.5);
+        gl.uniform1f(U.uAttenuation, 10.0);
         gl.uniform2f(U.uResolution, canvas.width, canvas.height);
         gl.uniform3f(U.uColor, colA[0], colA[1], colA[2]);
         gl.uniform3f(U.uColorTwo, colB[0], colB[1], colB[2]);
-        gl.uniform1f(U.uLineThickness, 3.8);
-        gl.uniform1f(U.uBaseRadius, 0.42);
-        gl.uniform1f(U.uRadiusStep, 0.09);
-        gl.uniform1f(U.uScaleRate, 0.24);
-        gl.uniform1i(U.uRingCount, 7);
+        gl.uniform1f(U.uLineThickness, 2.0);
+        gl.uniform1f(U.uBaseRadius, 0.35);
+        gl.uniform1f(U.uRadiusStep, 0.1);
+        gl.uniform1f(U.uScaleRate, 0.1);
+        gl.uniform1i(U.uRingCount, 6);
         gl.uniform1f(U.uOpacity, 1);
-        gl.uniform1f(U.uNoiseAmount, 0.06);
+        gl.uniform1f(U.uNoiseAmount, 0.1);
         gl.uniform1f(U.uRotation, 0);
-        gl.uniform1f(U.uRingGap, 1.4);
+        gl.uniform1f(U.uRingGap, 1.5);
         gl.uniform1f(U.uFadeIn, 0.7);
         gl.uniform1f(U.uFadeOut, 0.5);
-        gl.uniform2f(U.uMouse, 0, 0);
-        gl.uniform1f(U.uMouseInfluence, 0);
+        gl.uniform2f(U.uMouse, smoothX, smoothY);
+        gl.uniform1f(U.uMouseInfluence, 0.2);
         gl.uniform1f(U.uHoverAmount, 0);
         gl.uniform1f(U.uHoverScale, 1.2);
         gl.uniform1f(U.uParallax, 0.05);
