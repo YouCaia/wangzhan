@@ -1,6 +1,7 @@
 /* ============================================================
-   BubbleMenu 风格工具 pill 入场动画
+   BubbleMenu 风格工具 pill 入场动画 + 点击放大选中
    进入 skills.html 时自动播放：pill 从 scale 0 弹开 + 标签淡入。
+   点击 pill 放大并保持（互斥）。
    ============================================================ */
 
 (function () {
@@ -11,42 +12,55 @@
   var labels = grid.querySelectorAll('.tool-pill-label');
   var played = false;
 
+  function getRot(el) {
+    var v = getComputedStyle(el).getPropertyValue('--item-rot');
+    return parseFloat(v) || 0;
+  }
+
+  function bindClicks() {
+    pills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        var wasActive = pill.classList.contains('is-active');
+        pills.forEach(function (p) { p.classList.remove('is-active'); });
+        if (!wasActive) pill.classList.add('is-active');
+      });
+    });
+  }
+
   function play() {
     if (played) return;
     played = true;
 
     if (typeof gsap === 'undefined') {
-      // GSAP 未加载时直接显示
       pills.forEach(function (p) { p.style.transform = 'scale(1)'; });
       labels.forEach(function (l) { l.style.opacity = '1'; });
+      bindClicks();
       return;
     }
 
-    gsap.set(pills, { scale: 0, transformOrigin: '50% 50%' });
+    // 入场时即带旋转角度，避免动画结束后出现角度跳变
+    pills.forEach(function (pill) {
+      gsap.set(pill, { scale: 0, rotation: getRot(pill), transformOrigin: '50% 50%' });
+    });
     gsap.set(labels, { y: 24, autoAlpha: 0 });
+
+    var tl = gsap.timeline({
+      onComplete: function () {
+        // 交还 transform 给 CSS 控制（旋转 / hover / 点击放大）
+        pills.forEach(function (p) { gsap.set(p, { clearProps: 'transform' }); });
+        bindClicks();
+      }
+    });
 
     pills.forEach(function (pill, i) {
       var delay = i * 0.12 + gsap.utils.random(-0.05, 0.05);
-      var tl = gsap.timeline({ delay: delay });
-
-      tl.to(pill, {
-        scale: 1,
-        duration: 0.5,
-        ease: 'back.out(1.5)'
-      });
-
+      tl.to(pill, { scale: 1, duration: 0.5, ease: 'back.out(1.5)' }, delay);
       if (labels[i]) {
-        tl.to(labels[i], {
-          y: 0,
-          autoAlpha: 1,
-          duration: 0.5,
-          ease: 'power3.out'
-        }, '-=0.45');
+        tl.to(labels[i], { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, delay + 0.05);
       }
     });
   }
 
-  // 页面加载后触发（优先 load，确保 GSAP 已就位）
   if (document.readyState === 'complete') {
     play();
   } else {
