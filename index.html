@@ -11,7 +11,7 @@
   <script src="lightbox.js"></script>
   <link rel="stylesheet" href="staggered-menu.css">
   <style>
-  /* 首页加载动画（样式内联，避免依赖跨境外部 CSS，HTML 一解析即生效） */
+  /* 首页加载动画（全屏 MagicRings 光环 + 居中进度条/文案，样式内联避免跨境延迟） */
   #page-loader {
     position: fixed;
     inset: 0;
@@ -19,56 +19,78 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 50% 38%, #1a140c 0%, #0c0905 72%);
-    transition: opacity 0.6s ease;
-    -webkit-transition: opacity 0.6s ease;
+    background: #030303;
+    transition: opacity 0.7s ease;
+    -webkit-transition: opacity 0.7s ease;
   }
   #page-loader.pl-done { opacity: 0; pointer-events: none; }
-  .pl-inner { text-align: center; padding: 2rem; width: 100%; display: flex; flex-direction: column; align-items: center; }
-  .pl-rings { position: relative; width: min(340px, 68vw); height: min(340px, 68vw); margin: 0 auto; }
-  .pl-rings canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s ease; -webkit-transition: opacity 1.2s ease; }
+  .pl-rings {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .pl-rings canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    -webkit-transition: opacity 1.2s ease;
+  }
   .pl-rings.ready canvas { opacity: 1; }
-  .pl-word {
-    font-size: clamp(1.3rem, 3.6vw, 2rem);
-    font-weight: 800;
-    letter-spacing: 0.42em;
-    color: #e1bd27;
-    text-shadow: 0 0 18px rgba(225, 189, 39, 0.4);
-    margin: 1.3rem 0 1.5rem;
-    padding-left: 0.42em;
+  .pl-ui {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    padding: 2rem;
+    pointer-events: none;
   }
   .pl-track {
-    width: min(300px, 74vw);
-    height: 4px;
+    width: min(320px, 78vw);
+    height: 5px;
     margin: 0 auto;
-    background: rgba(217, 178, 76, 0.16);
+    background: rgba(217, 178, 76, 0.12);
     border-radius: 999px;
     overflow: hidden;
   }
   .pl-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #b8862f, #f0d089, #b8862f);
+    background: linear-gradient(90deg, #b8862f, #f0d089, #ffe7b0, #f0d089, #b8862f);
     background-size: 200% 100%;
     border-radius: 999px;
     transition: width 0.3s ease;
     -webkit-transition: width 0.3s ease;
-    box-shadow: 0 0 12px rgba(240, 208, 137, 0.5);
+    box-shadow: 0 0 18px rgba(240, 208, 137, 0.55);
     animation: pl-shimmer 1.4s linear infinite;
   }
   @keyframes pl-shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
-  .pl-pct { margin-top: 1rem; font-size: 0.85rem; letter-spacing: 0.15em; color: #d9b24c; }
+  .pl-pct {
+    margin-top: 0.95rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.18em;
+    color: #ffe7b0;
+    text-shadow: 0 0 14px rgba(0,0,0,0.85), 0 0 6px rgba(255,231,176,0.35);
+  }
   .pl-status {
-    margin-top: 1.05rem;
-    min-height: 1.5em;
+    margin-top: 1.15rem;
+    min-height: 1.6em;
     font-size: 0.95rem;
-    letter-spacing: 0.12em;
-    color: #d9b24c;
-    transition: opacity 0.5s ease;
-    -webkit-transition: opacity 0.5s ease;
+    letter-spacing: 0.1em;
+    color: #ffe7b0;
+    opacity: 1;
+    text-shadow: 0 0 20px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.9);
+    transition: opacity 0.55s ease;
+    -webkit-transition: opacity 0.55s ease;
   }
   .pl-status.pl-swap-out { opacity: 0; }
   </style>
@@ -1302,9 +1324,8 @@ window.__EDIT_OVERRIDES__ = {
 <body>
   <!-- 首页加载动画：MagicRings 金色光环 + 真实预加载进度 + 三段小字（逻辑见下方内联脚本） -->
   <div id="page-loader">
-    <div class="pl-inner">
-      <div class="pl-rings"><canvas id="mr-canvas"></canvas></div>
-      <div class="pl-word">YOUCAI</div>
+    <div class="pl-rings"><canvas id="mr-canvas"></canvas></div>
+    <div class="pl-ui">
       <div class="pl-track"><div class="pl-bar" id="pl-bar"></div></div>
       <div class="pl-pct" id="pl-pct">0%</div>
       <div class="pl-status" id="pl-status">首次加载图片稍慢，请等待一下！</div>
@@ -1485,12 +1506,13 @@ window.__EDIT_OVERRIDES__ = {
       ['uTime', 'uAttenuation', 'uResolution', 'uColor', 'uColorTwo', 'uLineThickness', 'uBaseRadius', 'uRadiusStep', 'uScaleRate', 'uRingCount', 'uOpacity', 'uNoiseAmount', 'uRotation', 'uRingGap', 'uFadeIn', 'uFadeOut', 'uMouse', 'uMouseInfluence', 'uHoverAmount', 'uHoverScale', 'uParallax', 'uBurst'].forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
 
       function hexRgb(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16) / 255, parseInt(h.substr(2, 2), 16) / 255, parseInt(h.substr(4, 2), 16) / 255]; }
-      var colA = hexRgb('#ffe7b0'), colB = hexRgb('#e1bd27');
+      var colA = hexRgb('#fff0c7'), colB = hexRgb('#e8c43a');
 
       gl.clearColor(0, 0, 0, 0);
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       function resize() {
-        var w = canvas.clientWidth || 340, h = canvas.clientHeight || 340;
+        var w = canvas.clientWidth || window.innerWidth || 340;
+        var h = canvas.clientHeight || window.innerHeight || 340;
         canvas.width = Math.max(1, Math.floor(w * dpr));
         canvas.height = Math.max(1, Math.floor(h * dpr));
         gl.viewport(0, 0, canvas.width, canvas.height);
@@ -1503,19 +1525,19 @@ window.__EDIT_OVERRIDES__ = {
       function frame(t) {
         var time = (t || performance.now()) * 0.001;
         gl.uniform1f(U.uTime, time * 1.0);
-        gl.uniform1f(U.uAttenuation, 6.0);
+        gl.uniform1f(U.uAttenuation, 7.5);
         gl.uniform2f(U.uResolution, canvas.width, canvas.height);
         gl.uniform3f(U.uColor, colA[0], colA[1], colA[2]);
         gl.uniform3f(U.uColorTwo, colB[0], colB[1], colB[2]);
-        gl.uniform1f(U.uLineThickness, 3.5);
-        gl.uniform1f(U.uBaseRadius, 0.35);
-        gl.uniform1f(U.uRadiusStep, 0.1);
-        gl.uniform1f(U.uScaleRate, 0.22);
+        gl.uniform1f(U.uLineThickness, 3.8);
+        gl.uniform1f(U.uBaseRadius, 0.42);
+        gl.uniform1f(U.uRadiusStep, 0.09);
+        gl.uniform1f(U.uScaleRate, 0.24);
         gl.uniform1i(U.uRingCount, 7);
         gl.uniform1f(U.uOpacity, 1);
-        gl.uniform1f(U.uNoiseAmount, 0.1);
+        gl.uniform1f(U.uNoiseAmount, 0.06);
         gl.uniform1f(U.uRotation, 0);
-        gl.uniform1f(U.uRingGap, 1.5);
+        gl.uniform1f(U.uRingGap, 1.4);
         gl.uniform1f(U.uFadeIn, 0.7);
         gl.uniform1f(U.uFadeOut, 0.5);
         gl.uniform2f(U.uMouse, 0, 0);
