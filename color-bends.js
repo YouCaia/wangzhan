@@ -143,21 +143,22 @@
     '}'
   ].join('\n');
 
-  // —— 配置（暗金主题 + 轻量、低曝光） ——
+  // —— 配置（金色主题 + 轻量、清晰但不刺眼） ——
+  // 关键：intensity 保持在 <1 且配色最高亮度 <0.95，避免高光被 clamp 成纯白（之前的过曝就源于此）
   var cfg = {
-    colors: ['#c9a66b', '#a8823a', '#7a5e2e', '#4f3b20'], // 暗金 / 金褐 / 铜棕 / 深棕
+    colors: ['#e8c98a', '#caa24f', '#9c7836', '#6b4f26'], // 暖金 / 金 / 暗金 / 铜棕
     rotation: 90,
-    speed: 0.10,
+    speed: 0.13,
     autoRotate: 0,
-    scale: 1.05,
-    frequency: 0.75,
-    warpStrength: 0.85,
-    mouseInfluence: 0.35,
-    parallax: 0.2,
-    noise: 0.08,
+    scale: 1.0,
+    frequency: 0.8,
+    warpStrength: 1.0,
+    mouseInfluence: 0.4,
+    parallax: 0.25,
+    noise: 0.12,
     iterations: 1,
-    intensity: 0.55,
-    bandWidth: 4.5,
+    intensity: 0.95,
+    bandWidth: 5,
     transparent: true
   };
 
