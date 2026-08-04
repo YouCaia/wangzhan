@@ -143,12 +143,12 @@
     '}'
   ].join('\n');
 
-  // —— 配置：对齐 React Bits 官方示例，颜色改用高饱和金色霓虹 ——
+  // —— 配置：对齐 React Bits 官方示例，颜色改深金（更暗、更纯金） ——
   // 官方示例参数：speed 0.2 / frequency 1 / warpStrength 1 / mouseInfluence 1 /
-  // parallax 0.5 / noise 0.15 / intensity 1.5 / bandWidth 6 / scale 1
-  // 为避免金色中出现死白，蓝色通道保持接近 0，让高光呈现亮金/橙金而非纯白
+  // parallax 0.5 / noise 0.15 / bandWidth 6 / scale 1
+  // 这里 intensity 降到 1.2，配色用中深金（非橙、非亮黄），整体更暗更稳重
   var cfg = {
-    colors: ['#ffdf4d', '#ffb800', '#ff9500', '#cc5200'], // 亮金 / 金黄 / 橙金 / 深橙金
+    colors: ['#d9b24c', '#c09233', '#a87a25', '#7c531a'], // 金 / 暗金 / 古铜金 / 深金棕
     rotation: 90,
     speed: 0.2,
     autoRotate: 0,
@@ -159,7 +159,7 @@
     parallax: 0.5,
     noise: 0.15,
     iterations: 1,
-    intensity: 1.5,
+    intensity: 1.0,
     bandWidth: 6,
     transparent: true
   };
