@@ -1,0 +1,65 @@
+/* 首页加载动画：暗金主题，全屏遮罩，真实跟踪图片加载进度 */
+#page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 38%, #1a140c 0%, #0c0905 72%);
+  transition: opacity 0.6s ease;
+  -webkit-transition: opacity 0.6s ease;
+}
+#page-loader.pl-done {
+  opacity: 0;
+  pointer-events: none;
+}
+.pl-inner {
+  text-align: center;
+  padding: 2rem;
+  width: 100%;
+}
+.pl-logo {
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  color: #d9b24c;
+  text-shadow: 0 0 26px rgba(217, 178, 76, 0.35);
+  margin: 0 0 0.7rem;
+  padding-left: 0.35em; /* 抵消字间距右侧留白，视觉居中 */
+}
+.pl-sub {
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  color: #b89a5e;
+  margin: 0 0 2rem;
+}
+.pl-track {
+  width: min(280px, 72vw);
+  height: 4px;
+  margin: 0 auto;
+  background: rgba(217, 178, 76, 0.16);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pl-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #b8862f, #f0d089);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  -webkit-transition: width 0.3s ease;
+  box-shadow: 0 0 12px rgba(240, 208, 137, 0.5);
+}
+.pl-pct {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: #d9b24c;
+}
+.pl-hint {
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: rgba(184, 154, 94, 0.6);
+}
