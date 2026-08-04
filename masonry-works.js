@@ -14,11 +14,11 @@
 
   var gsap = window.gsap;
 
-  // 按容器宽度决定列数（首页作品区容器 max-w-6xl≈1152px，桌面取 4 列，向两边延展）
+  // 按容器宽度决定列数（首页作品区容器 max-w-7xl≈1280px，桌面取 5 列，向两边延展）
   function columnsFor(width) {
-    if (width >= 1000) return 4;
-    if (width >= 700) return 3;
-    if (width >= 460) return 2;
+    if (width >= 1100) return 5;
+    if (width >= 760) return 3;
+    if (width >= 480) return 2;
     return 1;
   }
 
