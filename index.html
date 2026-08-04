@@ -24,19 +24,21 @@
     -webkit-transition: opacity 0.6s ease;
   }
   #page-loader.pl-done { opacity: 0; pointer-events: none; }
-  .pl-inner { text-align: center; padding: 2rem; width: 100%; }
-  .pl-logo {
-    font-size: clamp(2.4rem, 7vw, 4rem);
+  .pl-inner { text-align: center; padding: 2rem; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .pl-rings { position: relative; width: min(340px, 68vw); height: min(340px, 68vw); margin: 0 auto; }
+  .pl-rings canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s ease; -webkit-transition: opacity 1.2s ease; }
+  .pl-rings.ready canvas { opacity: 1; }
+  .pl-word {
+    font-size: clamp(1.3rem, 3.6vw, 2rem);
     font-weight: 800;
-    letter-spacing: 0.35em;
-    color: #d9b24c;
-    text-shadow: 0 0 26px rgba(217, 178, 76, 0.35);
-    margin: 0 0 0.7rem;
-    padding-left: 0.35em;
+    letter-spacing: 0.42em;
+    color: #e1bd27;
+    text-shadow: 0 0 18px rgba(225, 189, 39, 0.4);
+    margin: 1.3rem 0 1.5rem;
+    padding-left: 0.42em;
   }
-  .pl-sub { font-size: 0.95rem; letter-spacing: 0.18em; color: #b89a5e; margin: 0 0 2rem; }
   .pl-track {
-    width: min(280px, 72vw);
+    width: min(300px, 74vw);
     height: 4px;
     margin: 0 auto;
     background: rgba(217, 178, 76, 0.16);
@@ -59,7 +61,16 @@
     100% { background-position: -200% 0; }
   }
   .pl-pct { margin-top: 1rem; font-size: 0.85rem; letter-spacing: 0.15em; color: #d9b24c; }
-  .pl-hint { margin-top: 0.4rem; font-size: 0.72rem; letter-spacing: 0.1em; color: rgba(184, 154, 94, 0.6); }
+  .pl-status {
+    margin-top: 1.05rem;
+    min-height: 1.5em;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    color: #d9b24c;
+    transition: opacity 0.5s ease;
+    -webkit-transition: opacity 0.5s ease;
+  }
+  .pl-status.pl-swap-out { opacity: 0; }
   </style>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="masonry.css">
@@ -1289,50 +1300,79 @@ window.__EDIT_OVERRIDES__ = {
 };</script>
 </head>
 <body>
-  <!-- 首页加载动画：真实预加载图片，进度满后淡出（逻辑见下方内联脚本） -->
+  <!-- 首页加载动画：MagicRings 金色光环 + 真实预加载进度 + 三段小字（逻辑见下方内联脚本） -->
   <div id="page-loader">
     <div class="pl-inner">
-      <div class="pl-logo">YOUCAI</div>
-      <div class="pl-sub">正在唤醒作品集…</div>
+      <div class="pl-rings"><canvas id="mr-canvas"></canvas></div>
+      <div class="pl-word">YOUCAI</div>
       <div class="pl-track"><div class="pl-bar" id="pl-bar"></div></div>
       <div class="pl-pct" id="pl-pct">0%</div>
-      <div class="pl-hint">首次访问需从服务器加载图片，请稍候</div>
+      <div class="pl-status" id="pl-status">首次加载图片稍慢，请等待一下！</div>
     </div>
   </div>
-  <!-- 加载动画控制器（逻辑内联，HTML 解析即启动平滑进度，不依赖跨境外部脚本） -->
+  <!-- 加载动画控制器（逻辑内联，HTML 解析即启动：进度 + 三段小字 + MagicRings，不依赖跨境外部脚本） -->
   <script>
   (function () {
-    var overlay, barEl, pctEl, hidden = false, smoothTimer = null;
-    var realFrac = 0.02, visualFrac = 0.02, finished = false;
+    /* ---------- 1) 进度条 + 三段小字（即时启动，状态机保证三段都显示） ---------- */
+    var overlay, barEl, pctEl, statusEl, smoothTimer = null;
+    var realFrac = 0.02, visualFrac = 0.02, finished = false, hidden = false;
+    var stages = ['首次加载图片稍慢，请等待一下！', '请稍等！', '马上打开，感谢等待！'];
+    var stageIdx = 0, stageEnter = 0, pageStart = 0, transitioning = false;
+    var MIN_DWELL = 2.0, MIN_PER_STAGE = 2.0;
+
     function cache() {
       overlay = document.getElementById('page-loader');
       barEl = document.getElementById('pl-bar');
       pctEl = document.getElementById('pl-pct');
+      statusEl = document.getElementById('pl-status');
     }
     function applyBar(frac) {
       var v = Math.max(0, Math.min(100, Math.round(frac * 100)));
       if (barEl) barEl.style.width = v + '%';
       if (pctEl) pctEl.textContent = v + '%';
     }
-    function startSmooth() {
-      if (smoothTimer) return;
-      cache();
-      smoothTimer = setInterval(function () {
-        if (finished) return;
-        var target = Math.min(realFrac + 0.12, 0.9);
-        visualFrac += (target - visualFrac) * 0.12 + 0.004;
-        if (visualFrac > 0.9) visualFrac = 0.9;
-        applyBar(visualFrac);
-      }, 100);
+    function setStatusText(i) { if (statusEl) statusEl.textContent = stages[i]; }
+    function transitionTo(i) {
+      if (i === stageIdx || transitioning) return;
+      transitioning = true;
+      if (!statusEl) { stageIdx = i; transitioning = false; return; }
+      statusEl.classList.add('pl-swap-out');
+      setTimeout(function () {
+        setStatusText(i);
+        statusEl.classList.remove('pl-swap-out');
+        stageIdx = i; stageEnter = performance.now(); transitioning = false;
+      }, 520);
     }
-    function hide() {
-      if (!overlay) cache();
-      if (!overlay || hidden) return;
-      hidden = true; finished = true;
-      if (smoothTimer) { clearInterval(smoothTimer); smoothTimer = null; }
+    function doHide() {
+      if (hidden || !overlay) return;
+      hidden = true;
       if (overlay.classList.contains('pl-done')) return;
       overlay.classList.add('pl-done');
       setTimeout(function () { if (overlay) overlay.style.display = 'none'; }, 700);
+    }
+    function tick() {
+      if (finished) { visualFrac = 1; }
+      else {
+        var target = Math.min(realFrac + 0.12, 0.9);
+        visualFrac += (target - visualFrac) * 0.12 + 0.004;
+        if (visualFrac > 0.9) visualFrac = 0.9;
+      }
+      applyBar(visualFrac);
+      var now = performance.now();
+      var dwell = (now - stageEnter) / 1000;
+      var elapsed = (now - pageStart) / 1000;
+      var progTarget = visualFrac < 0.34 ? 0 : (visualFrac < 0.70 ? 1 : 2);
+      if (stageIdx < 2) {
+        var timeGate = elapsed >= (stageIdx + 1) * MIN_PER_STAGE;
+        if (progTarget > stageIdx && (dwell >= MIN_DWELL || timeGate)) transitionTo(stageIdx + 1);
+      } else {
+        if (finished && dwell >= 1.2) doHide();
+      }
+    }
+    function startSmooth() {
+      if (smoothTimer) return;
+      cache();
+      smoothTimer = setInterval(tick, 100);
     }
     function preload(urls, onComplete) {
       cache();
@@ -1341,30 +1381,156 @@ window.__EDIT_OVERRIDES__ = {
       function complete() {
         if (finished) { if (onComplete) onComplete(); return; }
         finished = true;
-        if (smoothTimer) { clearInterval(smoothTimer); smoothTimer = null; }
-        visualFrac = 1; realFrac = 1; applyBar(1);
+        realFrac = 1; applyBar(1);
         if (onComplete) onComplete();
       }
-      function tick() { loaded++; realFrac = loaded / total; if (loaded >= total) complete(); }
+      function tickimg() { loaded++; realFrac = loaded / total; if (loaded >= total) complete(); }
       urls.forEach(function (u) {
-        var im = new Image();
-        im.onload = tick; im.onerror = tick; im.src = u;
+        var im = new Image(); im.onload = tickimg; im.onerror = tickimg; im.src = u;
       });
       setTimeout(complete, 10000);
     }
     window.YCPreloader = {
       run: function (urls, onComplete) {
-        cache(); applyBar(0.02); startSmooth();
-        preload(urls, function () { if (onComplete) onComplete(); setTimeout(hide, 300); });
+        cache(); applyBar(0.02);
+        pageStart = performance.now(); stageEnter = performance.now();
+        startSmooth();
+        preload(urls, function () { if (onComplete) onComplete(); });
       },
-      hide: hide
+      hide: doHide
     };
-    // 立即开始平滑流动（不等外部脚本 / load 事件）
-    startSmooth();
-    // 全局兜底：14s 后仍在则强制隐藏，避免永久白屏
+    cache();
+    pageStart = performance.now(); stageEnter = performance.now();
+    setStatusText(0); startSmooth();
     window.addEventListener('load', function () {
-      setTimeout(function () { if (overlay && !overlay.classList.contains('pl-done')) hide(); }, 14000);
+      setTimeout(function () { if (overlay && !overlay.classList.contains('pl-done')) doHide(); }, 14000);
     });
+
+    /* ---------- 2) MagicRings 中心视觉（原生 WebGL，金色光环，内联即时渲染） ---------- */
+    (function initRings() {
+      var canvas = document.getElementById('mr-canvas');
+      if (!canvas) return;
+      var gl = null;
+      try { gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl'); } catch (e) { gl = null; }
+      if (!gl) return;
+
+      var vs = 'attribute vec2 aPos; void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }';
+      var fs = [
+        'precision highp float;',
+        'uniform float uTime, uAttenuation, uLineThickness;',
+        'uniform float uBaseRadius, uRadiusStep, uScaleRate;',
+        'uniform float uOpacity, uNoiseAmount, uRotation, uRingGap;',
+        'uniform float uFadeIn, uFadeOut;',
+        'uniform float uMouseInfluence, uHoverAmount, uHoverScale, uParallax, uBurst;',
+        'uniform vec2 uResolution, uMouse;',
+        'uniform vec3 uColor, uColorTwo;',
+        'uniform int uRingCount;',
+        'const float HP = 1.5707963;',
+        'const float CYCLE = 3.45;',
+        'float fade(float t){ return t < uFadeIn ? smoothstep(0.0, uFadeIn, t) : 1.0 - smoothstep(uFadeOut, CYCLE - 0.2, t); }',
+        'float ring(vec2 p, float ri, float cut, float t0, float px){',
+        '  float t = mod(uTime + t0, CYCLE);',
+        '  float r = ri + t / CYCLE * uScaleRate;',
+        '  float d = abs(length(p) - r);',
+        '  float a = atan(abs(p.y), abs(p.x)) / HP;',
+        '  float th = max(1.0 - a, 0.5) * px * uLineThickness;',
+        '  float h = (1.0 - smoothstep(th, th * 1.5, d)) + 1.0;',
+        '  d += pow(cut * a, 3.0) * r;',
+        '  return h * exp(-uAttenuation * d) * fade(t);',
+        '}',
+        'void main(){',
+        '  float px = 1.0 / min(uResolution.x, uResolution.y);',
+        '  vec2 p = (gl_FragCoord.xy - 0.5 * uResolution.xy) * px;',
+        '  float cr = cos(uRotation), sr = sin(uRotation);',
+        '  p = mat2(cr, -sr, sr, cr) * p;',
+        '  p -= uMouse * uMouseInfluence;',
+        '  float sc = mix(1.0, uHoverScale, uHoverAmount) + uBurst * 0.3;',
+        '  p /= sc;',
+        '  vec3 c = vec3(0.0);',
+        '  float rcf = max(float(uRingCount) - 1.0, 1.0);',
+        '  for (int i = 0; i < 10; i++){',
+        '    if (i >= uRingCount) break;',
+        '    float fi = float(i);',
+        '    vec2 pr = p - fi * uParallax * uMouse;',
+        '    vec3 rc = mix(uColor, uColorTwo, fi / rcf);',
+        '    c = mix(c, rc, vec3(ring(pr, uBaseRadius + fi * uRadiusStep, pow(uRingGap, fi), i == 0 ? 0.0 : 2.95 * fi, px)));',
+        '  }',
+        '  c *= 1.0 + uBurst * 2.0;',
+        '  float n = fract(sin(dot(gl_FragCoord.xy + uTime * 100.0, vec2(12.9898, 78.233))) * 43758.5453);',
+        '  c += (n - 0.5) * uNoiseAmount;',
+        '  gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)) * uOpacity);',
+        '}'
+      ].join('\n');
+
+      function compile(type, src) {
+        var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.warn('MR shader:', gl.getShaderInfoLog(s)); return null; }
+        return s;
+      }
+      var prog = gl.createProgram();
+      var vsS = compile(gl.VERTEX_SHADER, vs), fsS = compile(gl.FRAGMENT_SHADER, fs);
+      if (!vsS || !fsS) return;
+      gl.attachShader(prog, vsS); gl.attachShader(prog, fsS); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn('MR link:', gl.getProgramInfoLog(prog)); return; }
+      gl.useProgram(prog);
+
+      var buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      var aPos = gl.getAttribLocation(prog, 'aPos');
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+      var U = {};
+      ['uTime', 'uAttenuation', 'uResolution', 'uColor', 'uColorTwo', 'uLineThickness', 'uBaseRadius', 'uRadiusStep', 'uScaleRate', 'uRingCount', 'uOpacity', 'uNoiseAmount', 'uRotation', 'uRingGap', 'uFadeIn', 'uFadeOut', 'uMouse', 'uMouseInfluence', 'uHoverAmount', 'uHoverScale', 'uParallax', 'uBurst'].forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
+
+      function hexRgb(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16) / 255, parseInt(h.substr(2, 2), 16) / 255, parseInt(h.substr(4, 2), 16) / 255]; }
+      var colA = hexRgb('#ffe7b0'), colB = hexRgb('#e1bd27');
+
+      gl.clearColor(0, 0, 0, 0);
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      function resize() {
+        var w = canvas.clientWidth || 340, h = canvas.clientHeight || 340;
+        canvas.width = Math.max(1, Math.floor(w * dpr));
+        canvas.height = Math.max(1, Math.floor(h * dpr));
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      if (window.ResizeObserver) { try { new ResizeObserver(resize).observe(canvas); } catch (e) {} }
+
+      var ready = false;
+      function frame(t) {
+        var time = (t || performance.now()) * 0.001;
+        gl.uniform1f(U.uTime, time * 1.0);
+        gl.uniform1f(U.uAttenuation, 6.0);
+        gl.uniform2f(U.uResolution, canvas.width, canvas.height);
+        gl.uniform3f(U.uColor, colA[0], colA[1], colA[2]);
+        gl.uniform3f(U.uColorTwo, colB[0], colB[1], colB[2]);
+        gl.uniform1f(U.uLineThickness, 3.5);
+        gl.uniform1f(U.uBaseRadius, 0.35);
+        gl.uniform1f(U.uRadiusStep, 0.1);
+        gl.uniform1f(U.uScaleRate, 0.22);
+        gl.uniform1i(U.uRingCount, 7);
+        gl.uniform1f(U.uOpacity, 1);
+        gl.uniform1f(U.uNoiseAmount, 0.1);
+        gl.uniform1f(U.uRotation, 0);
+        gl.uniform1f(U.uRingGap, 1.5);
+        gl.uniform1f(U.uFadeIn, 0.7);
+        gl.uniform1f(U.uFadeOut, 0.5);
+        gl.uniform2f(U.uMouse, 0, 0);
+        gl.uniform1f(U.uMouseInfluence, 0);
+        gl.uniform1f(U.uHoverAmount, 0);
+        gl.uniform1f(U.uHoverScale, 1.2);
+        gl.uniform1f(U.uParallax, 0.05);
+        gl.uniform1f(U.uBurst, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        if (!ready) { ready = true; if (canvas.parentNode) canvas.parentNode.classList.add('ready'); }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
   })();
   </script>
 
