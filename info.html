@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>信息 · YOUCAI</title>
+  <link rel="stylesheet" href="staggered-menu.css">
+  <link rel="stylesheet" href="subpage.css">
+</head>
+<body>
+
+  <!-- ===== StaggeredMenu 金色错峰导航（原生 JS 移植自 React Bits） ===== -->
+  <div class="sm-wrapper" id="sm-root" data-position="right">
+    <div class="sm-prelayers" id="sm-prelayers" aria-hidden="true"></div>
+    <header class="sm-header">
+      <a href="index.html" class="sm-logo" aria-label="YOUCAI 首页">YOUCAI</a>
+      <button class="sm-toggle" id="sm-toggle" aria-label="打开菜单" aria-expanded="false" aria-controls="sm-panel" type="button">
+        <span class="sm-icon" id="sm-icon" aria-hidden="true">
+          <span class="sm-bar sm-bar-top" id="sm-barTop"></span>
+          <span class="sm-bar sm-bar-mid" id="sm-barMid"></span>
+          <span class="sm-bar sm-bar-bot" id="sm-barBot"></span>
+        </span>
+      </button>
+    </header>
+    <aside class="sm-panel" id="sm-panel" aria-hidden="true">
+      <div class="sm-panel-inner">
+        <ul class="sm-list" id="sm-list" role="list"></ul>
+        <div class="sm-socials" id="sm-socials">
+          <h3 class="sm-socials-title">社交</h3>
+          <ul class="sm-socials-list" id="sm-socials-list" role="list"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="vignette"></div>
+
+  <main class="page-content">
+    <h1 class="page-title">关于我</h1>
+    <p class="page-sub">About Me</p>
+
+    <div class="card">
+      <p class="lede">嗨，我是 YOUCAI —— 一个把「好看」和「好用」都当回事的设计师。</p>
+      <p class="lede muted">（这一段是占位的有趣自我介绍，你之后想怎么写都行，随时告诉我帮你改。下面是几个可以填的小卡片，先留了空位。）</p>
+    </div>
+
+    <div class="section-title">一些关于我的小事</div>
+    <div class="fact-grid">
+      <div class="fact"><h4>身份</h4><p>视觉 / 三维设计师，擅长把甲方模糊的需求翻译成能落地的画面。</p></div>
+      <div class="fact"><h4>风格</h4><p>偏爱金色、流动、有质感的画面；不喜欢死板的直角。</p></div>
+      <div class="fact"><h4>日常</h4><p>建模、渲染、做图、喝咖啡，循环往复，乐在其中。</p></div>
+      <div class="fact"><h4>信条</h4><p>细节决定质感，耐心决定上限。</p></div>
+    </div>
+  </main>
+
+  <script src="water-bg.js"></script>
+  <script src="color-bends.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="staggered-menu.js"></script>
+  <script src="subpage.js"></script>
+</body>
+</html>

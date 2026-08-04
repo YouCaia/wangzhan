@@ -1,0 +1,208 @@
+/* ============================================================
+   子页面共享样式（技能 / 信息 / 联系）
+   深色金调，与首页 ColorBends + 水波背景一致。
+   ============================================================ */
+:root {
+  --gold: #f0d089;
+  --gold-mid: #d4a857;
+  --gold-deep: #c98a3b;
+  --ink: #f3e6c8;
+  --ink-soft: #c9b58a;
+  --panel: rgba(20, 15, 9, 0.55);
+  --border: rgba(212, 168, 87, 0.18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0a0805;
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 背景氛围层 */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(125% 120% at 50% 28%, rgba(0,0,0,0) 38%, rgba(0,0,0,0.6) 100%);
+}
+
+/* ---------- 内容容器 ---------- */
+.page-content {
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 8.5rem 1.6rem 5rem;
+}
+.page-title {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #f0d089, #d4a857, #c98a3b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-sub {
+  color: var(--ink-soft);
+  letter-spacing: 0.22em;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  margin: 0 0 2.6rem;
+}
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--gold-mid);
+  margin: 2.6rem 0 1.2rem;
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--gold-deep);
+}
+
+/* ---------- 通用卡片 ---------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem 2.2rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.card + .card { margin-top: 1.4rem; }
+.lede {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--ink);
+}
+.lede + .lede { margin-top: 1.1rem; }
+.muted { color: var(--ink-soft); }
+
+/* ---------- 技能：循环旋转的图标 ---------- */
+@keyframes spin { to { transform: rotate(360deg); } }
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 2rem 1rem;
+  margin-top: 0.6rem;
+}
+.skill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+.skill-badge {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skill-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #f0d089, #b8862f, #6b4f1f, #c98a3b, #f0d089);
+  -webkit-mask: radial-gradient(circle at center, transparent 30px, #000 31px);
+  mask: radial-gradient(circle at center, transparent 30px, #000 31px);
+  animation: spin 9s linear infinite;
+}
+.skill:nth-child(even) .skill-ring { animation-duration: 12s; animation-direction: reverse; }
+.skill-initial {
+  position: relative;
+  z-index: 1;
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+.skill-name {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- 信息页：趣味小卡 ---------- */
+.fact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.2rem;
+  margin-top: 0.4rem;
+}
+.fact {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem 1.6rem;
+}
+.fact h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  color: var(--gold-deep);
+  text-transform: uppercase;
+}
+.fact p { margin: 0; color: var(--ink); line-height: 1.7; font-size: 0.98rem; }
+
+/* ---------- 联系：卡片 + 复制 ---------- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.3rem;
+  margin-top: 0.6rem;
+}
+.contact-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.6rem 1.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.contact-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.contact-value {
+  font-size: 1.15rem;
+  color: var(--ink);
+  word-break: break-all;
+}
+.copy-btn {
+  align-self: flex-start;
+  margin-top: 0.3rem;
+  background: linear-gradient(135deg, #d4a857, #b8862f);
+  border: none;
+  color: #1a130a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  padding: 0.5em 1.6em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.copy-btn:hover { filter: brightness(1.1); }
+.copy-btn:disabled {
+  background: rgba(212,168,87,0.18);
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 640px) {
+  .page-content { padding: 7rem 1.2rem 4rem; }
+  .card { padding: 1.5rem 1.3rem; }
+}

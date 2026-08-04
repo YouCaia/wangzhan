@@ -2,6 +2,11 @@
    StaggeredMenu — 原生 JS 移植（对应 React Bits 的 React 组件）
    依赖：vendor/gsap.min.js（已本地化）。动画时间轴 1:1 复刻原组件。
    所有菜单项 / 社交 / 颜色都集中在下面的 CONFIG 里，自行修改即可。
+
+   交互约定（按站长需求）：
+   - 切换按钮只保留图标：关闭态=三横，打开态=叉（X）。无文字。
+   - 菜单项点击跳转到独立页面（非页内锚点）。
+   - 底部社交点击弹出信息层（微信/邮箱可复制，小红书/抖音暂未注册）。
    ============================================================ */
 (function () {
   'use strict';
@@ -14,20 +19,20 @@
   var CONFIG = {
     // 滑入前的彩色底层（金色层，从深金到亮金，最多 4 个，会自动去掉中间一个做错位）
     colors: ['#5a4420', '#b8862f', '#d4a857'],
-    // 菜单项：label 显示文字，link 跳转地址，ariaLabel 无障碍标签
+    // 菜单项：label 显示文字，link 跳转地址（均为独立页面）
     items: [
       { label: '首页', ariaLabel: '返回首页', link: 'index.html' },
       { label: '作品', ariaLabel: '查看作品集', link: 'works.html' },
-      { label: '技能', ariaLabel: '查看技能特长', link: 'index.html#skills' },
-      { label: '流程', ariaLabel: '查看服务流程', link: 'index.html#process' },
-      { label: '联系', ariaLabel: '查看联系方式', link: 'index.html#contact' }
+      { label: '技能', ariaLabel: '查看技能与软件', link: 'skills.html' },
+      { label: '信息', ariaLabel: '关于我的详细信息', link: 'info.html' },
+      { label: '联系', ariaLabel: '查看联系方式', link: 'contact.html' }
     ],
-    // 社交链接：需要真实地址请替换 href（# 表示占位）
+    // 社交：点击弹窗。display=弹窗正文，copy=可复制内容（为空则不显示复制按钮）
     socialItems: [
-      { label: '微信', link: '#' },
-      { label: '小红书', link: '#' },
-      { label: '抖音', link: '#' },
-      { label: '邮箱', link: 'mailto:youcai@example.com' }
+      { label: '微信', display: '微信号：ZhangdeShuaideZYC', copy: 'ZhangdeShuaideZYC' },
+      { label: '小红书', display: '小红书：暂未注册', copy: '' },
+      { label: '抖音', display: '抖音：暂未注册', copy: '' },
+      { label: '邮箱', display: '1725067686@qq.com', copy: '1725067686@qq.com' }
     ],
     displaySocials: true,
     displayItemNumbering: true,
@@ -48,9 +53,9 @@
   var toggleBtn = document.getElementById('sm-toggle');
   var panel = document.getElementById('sm-panel');
   var icon = document.getElementById('sm-icon');
-  var plusH = document.getElementById('sm-plusH');
-  var plusV = document.getElementById('sm-plusV');
-  var textInner = document.getElementById('sm-textInner');
+  var barTop = document.getElementById('sm-barTop');
+  var barMid = document.getElementById('sm-barMid');
+  var barBot = document.getElementById('sm-barBot');
 
   // prelayers
   preContainer.innerHTML = '';
@@ -83,44 +88,112 @@
     list.appendChild(li);
   });
 
-  // socials
+  // socials（按钮 + 弹窗数据）
   if (CONFIG.displaySocials && CONFIG.socialItems && CONFIG.socialItems.length) {
     socialsWrap.style.display = '';
     socialsList.innerHTML = '';
     CONFIG.socialItems.forEach(function (s) {
       var li = document.createElement('li');
       li.className = 'sm-socials-item';
-      var a = document.createElement('a');
-      a.className = 'sm-socials-link';
-      a.href = s.link;
-      a.textContent = s.label;
-      if (/^https?:/i.test(s.link)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
-      li.appendChild(a);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sm-socials-link';
+      btn.textContent = s.label;
+      btn.setAttribute('data-label', s.label);
+      btn.setAttribute('data-display', s.display);
+      btn.setAttribute('data-copy', s.copy || '');
+      li.appendChild(btn);
       socialsList.appendChild(li);
     });
   } else {
     socialsWrap.style.display = 'none';
   }
 
-  /* ---------- 降级：没有 GSAP 也能开合 ---------- */
+  /* ---------- 社交弹窗（注入 DOM，全页通用） ---------- */
+  var popup = document.createElement('div');
+  popup.className = 'sm-popup';
+  popup.id = 'sm-popup';
+  popup.setAttribute('aria-hidden', 'true');
+  popup.innerHTML =
+    '<div class="sm-popup-backdrop" id="sm-popup-backdrop"></div>' +
+    '<div class="sm-popup-box" role="dialog" aria-modal="true">' +
+      '<button class="sm-popup-close" id="sm-popup-close" aria-label="关闭">&times;</button>' +
+      '<h3 class="sm-popup-title" id="sm-popup-title"></h3>' +
+      '<p class="sm-popup-text" id="sm-popup-text"></p>' +
+      '<button class="sm-popup-copy" id="sm-popup-copy">复制</button>' +
+    '</div>';
+  root.appendChild(popup);
+  var popupBackdrop = popup.querySelector('#sm-popup-backdrop');
+  var popupTitle = popup.querySelector('#sm-popup-title');
+  var popupText = popup.querySelector('#sm-popup-text');
+  var popupCopy = popup.querySelector('#sm-popup-copy');
+  var popupClose = popup.querySelector('#sm-popup-close');
+  var popupCopyValue = '';
+
+  function openPopup(label, display, copy) {
+    popupTitle.textContent = label;
+    popupText.textContent = display;
+    popupCopyValue = copy || '';
+    if (popupCopyValue) { popupCopy.style.display = ''; popupCopy.textContent = '复制'; }
+    else { popupCopy.style.display = 'none'; }
+    popup.classList.add('sm-popup-open');
+    popup.setAttribute('aria-hidden', 'false');
+  }
+  function closePopup() {
+    popup.classList.remove('sm-popup-open');
+    popup.setAttribute('aria-hidden', 'true');
+  }
+  function copyText(text) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {}, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  socialsList.querySelectorAll('.sm-socials-link').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      openPopup(btn.getAttribute('data-label'), btn.getAttribute('data-display'), btn.getAttribute('data-copy'));
+    });
+  });
+  popupClose.addEventListener('click', closePopup);
+  popupBackdrop.addEventListener('click', closePopup);
+  popupCopy.addEventListener('click', function () {
+    if (!popupCopyValue) return;
+    copyText(popupCopyValue);
+    popupCopy.textContent = '已复制 ✓';
+    setTimeout(function () { popupCopy.textContent = '复制'; }, 1500);
+  });
+
+  /* ---------- 降级：没有 GSAP 也能开合（靠 .sm-open 类 + CSS） ---------- */
   if (!gsap) {
     toggleBtn.addEventListener('click', function () {
       var isOpen = root.classList.toggle('sm-open');
       toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-      icon.style.transform = isOpen ? 'rotate(225deg)' : 'rotate(0deg)';
+      toggleBtn.setAttribute('aria-label', isOpen ? '关闭菜单' : '打开菜单');
     });
     list.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('click', function () { root.classList.remove('sm-open'); });
     });
     if (CONFIG.closeOnClickAway) {
       document.addEventListener('mousedown', function (e) {
-        if (panel.contains(e.target) || toggleBtn.contains(e.target)) return;
+        if (panel.contains(e.target) || toggleBtn.contains(e.target) || popup.contains(e.target)) return;
         if (root.classList.contains('sm-open')) root.classList.remove('sm-open');
       });
     }
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') root.classList.remove('sm-open');
+      if (e.key === 'Escape') { if (popup.classList.contains('sm-popup-open')) closePopup(); else root.classList.remove('sm-open'); }
     });
     return;
   }
@@ -128,13 +201,10 @@
   /* ====================== GSAP 动画逻辑 ====================== */
   var open = false;
   var busy = false;
-  var openTl = null, closeTween = null, spinTween = null, textCycle = null, colorTween = null;
+  var openTl = null, closeTween = null, spinTween = null, colorTween = null;
 
   gsap.set([panel].concat(Array.prototype.slice.call(preContainer.children)), { xPercent: offscreen, opacity: 1 });
-  gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
-  gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
-  gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
-  gsap.set(textInner, { yPercent: 0 });
+  gsap.set([barTop, barMid, barBot], { y: 0, rotate: 0, opacity: 1, scaleX: 1 });
   gsap.set(toggleBtn, { color: CONFIG.menuButtonColor });
 
   function buildOpenTimeline() {
@@ -226,10 +296,20 @@
     });
   }
 
+  // 三横 → 叉（X）
   function animateIcon(opening) {
     if (spinTween) spinTween.kill();
-    if (opening) spinTween = gsap.to(icon, { rotate: 225, duration: 0.8, ease: 'power4.out', overwrite: 'auto' });
-    else spinTween = gsap.to(icon, { rotate: 0, duration: 0.35, ease: 'power3.inOut', overwrite: 'auto' });
+    if (opening) {
+      spinTween = gsap.timeline({ overwrite: 'auto' });
+      spinTween.to(barTop, { y: 5, rotate: 45, duration: 0.5, ease: 'power4.out' }, 0);
+      spinTween.to(barMid, { opacity: 0, scaleX: 0.2, duration: 0.3 }, 0);
+      spinTween.to(barBot, { y: -5, rotate: -45, duration: 0.5, ease: 'power4.out' }, 0);
+    } else {
+      spinTween = gsap.timeline({ overwrite: 'auto' });
+      spinTween.to(barTop, { y: 0, rotate: 0, duration: 0.35, ease: 'power3.inOut' }, 0);
+      spinTween.to(barMid, { opacity: 1, scaleX: 1, duration: 0.3 }, 0);
+      spinTween.to(barBot, { y: 0, rotate: 0, duration: 0.35, ease: 'power3.inOut' }, 0);
+    }
   }
 
   function animateColor(opening) {
@@ -238,29 +318,6 @@
       var target = opening ? CONFIG.openMenuButtonColor : CONFIG.menuButtonColor;
       colorTween = gsap.to(toggleBtn, { color: target, delay: 0.18, duration: 0.3, ease: 'power2.out' });
     }
-  }
-
-  function animateText(opening) {
-    if (textCycle) textCycle.kill();
-    var current = opening ? '菜单' : '关闭';
-    var target = opening ? '关闭' : '菜单';
-    var seq = [current];
-    var last = current;
-    for (var i = 0; i < 3; i++) { last = last === '菜单' ? '关闭' : '菜单'; seq.push(last); }
-    if (last !== target) seq.push(target);
-    seq.push(target);
-
-    textInner.innerHTML = '';
-    seq.forEach(function (l) {
-      var s = document.createElement('span');
-      s.className = 'sm-toggle-line';
-      s.textContent = l;
-      textInner.appendChild(s);
-    });
-    gsap.set(textInner, { yPercent: 0 });
-    var lineCount = seq.length;
-    var finalShift = ((lineCount - 1) / lineCount) * 100;
-    textCycle = gsap.to(textInner, { yPercent: -finalShift, duration: 0.5 + lineCount * 0.07, ease: 'power4.out' });
   }
 
   function setOpen(target) {
@@ -277,7 +334,6 @@
     setOpen(target);
     if (target) playOpen(); else playClose();
     animateIcon(target);
-    animateText(target);
   }
 
   function closeMenu() {
@@ -285,7 +341,6 @@
       setOpen(false);
       playClose();
       animateIcon(false);
-      animateText(false);
     }
   }
 
@@ -296,16 +351,19 @@
     a.addEventListener('click', function () { closeMenu(); });
   });
 
-  // 点击面板/按钮之外关闭
+  // 点击面板/按钮之外关闭（弹窗内不触发）
   if (CONFIG.closeOnClickAway) {
     document.addEventListener('mousedown', function (e) {
-      if (panel.contains(e.target) || toggleBtn.contains(e.target)) return;
+      if (panel.contains(e.target) || toggleBtn.contains(e.target) || popup.contains(e.target)) return;
       if (open) closeMenu();
     });
   }
 
-  // Esc 关闭
+  // Esc：先关弹窗，再关菜单
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && open) closeMenu();
+    if (e.key === 'Escape') {
+      if (popup.classList.contains('sm-popup-open')) closePopup();
+      else if (open) closeMenu();
+    }
   });
 })();

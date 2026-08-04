@@ -40,65 +40,51 @@
 }
 .sm-logo:hover { -webkit-text-fill-color: #f0d089; color: #f0d089; }
 
+/* 切换按钮：仅图标，无文字 */
 .sm-toggle {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(18, 14, 9, 0.5);
+  border: 1px solid rgba(212, 168, 87, 0.25);
+  border-radius: 10px;
   cursor: pointer;
   color: #f0d089;
-  font-weight: 500;
-  font-size: 0.95rem;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  padding: 0.4em 0.2em;
+  padding: 0;
+  transition: background 0.25s, border-color 0.25s;
+}
+.sm-toggle:hover {
+  background: rgba(212, 168, 87, 0.14);
+  border-color: rgba(212, 168, 87, 0.5);
 }
 .sm-toggle:focus-visible {
   outline: 2px solid rgba(240, 208, 137, 0.6);
-  outline-offset: 4px;
-  border-radius: 4px;
+  outline-offset: 3px;
 }
 
-.sm-toggle-textWrap {
-  position: relative;
-  display: inline-block;
-  height: 1em;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.sm-toggle-textInner {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
-}
-.sm-toggle-line {
-  display: block;
-  height: 1em;
-  line-height: 1;
-}
-
+/* 图标：三横（关闭态）→ 叉（打开态） */
 .sm-icon {
   position: relative;
-  width: 16px;
+  display: inline-block;
+  width: 22px;
   height: 16px;
-  flex: 0 0 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  flex: 0 0 22px;
 }
-.sm-icon-line {
+.sm-bar {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 100%;
+  left: 0;
+  right: 0;
   height: 2px;
   background: currentColor;
   border-radius: 2px;
-  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
 }
-.sm-icon-line-v { transform: translate(-50%, -50%) rotate(90deg); }
+.sm-bar-top { top: 2px; }
+.sm-bar-mid { top: 7px; }
+.sm-bar-bot { top: 12px; }
 
 /* ---------- 滑入前的彩色底层（金色层） ---------- */
 .sm-prelayers {
@@ -199,7 +185,7 @@
   opacity: var(--sm-num-opacity, 0);
 }
 
-/* ---------- 社交链接 ---------- */
+/* ---------- 社交链接（按钮，点击弹窗） ---------- */
 .sm-socials {
   margin-top: auto;
   padding-top: 2rem;
@@ -224,10 +210,13 @@
   gap: 1.1rem;
 }
 .sm-socials-link {
+  background: none;
+  border: none;
+  font-family: inherit;
   font-size: 1.05rem;
   font-weight: 500;
   color: #e9d9b5;
-  text-decoration: none;
+  cursor: pointer;
   position: relative;
   padding: 2px 0;
   transition: color 0.3s, opacity 0.3s;
@@ -235,9 +224,85 @@
 .sm-socials-list:hover .sm-socials-link { opacity: 0.35; }
 .sm-socials-list:hover .sm-socials-link:hover { opacity: 1; color: #f0d089; }
 
+/* ---------- 社交弹窗 ---------- */
+.sm-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+.sm-popup.sm-popup-open { display: flex; }
+.sm-popup-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.sm-popup-box {
+  position: relative;
+  z-index: 1;
+  min-width: 280px;
+  max-width: 90vw;
+  background: linear-gradient(160deg, #221a10, #15100a);
+  border: 1px solid rgba(212, 168, 87, 0.35);
+  border-radius: 16px;
+  padding: 2.2rem 2rem 1.8rem;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.sm-popup-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.9rem;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: #c98a3b;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+.sm-popup-close:hover { color: #f0d089; background: rgba(212, 168, 87, 0.12); }
+.sm-popup-title {
+  margin: 0 0 0.8rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #c98a3b;
+}
+.sm-popup-text {
+  margin: 0 0 1.4rem;
+  font-size: 1.15rem;
+  color: #f3e6c8;
+  word-break: break-all;
+}
+.sm-popup-copy {
+  background: linear-gradient(135deg, #d4a857, #b8862f);
+  border: none;
+  color: #1a130a;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  padding: 0.6em 1.8em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.sm-popup-copy:hover { filter: brightness(1.1); }
+
 /* ---------- 降级方案：GSAP 未加载时仍能开关 ---------- */
 .sm-wrapper.sm-open .sm-panel { transform: translateX(0) !important; opacity: 1 !important; }
 .sm-wrapper.sm-open .sm-prelayer { transform: translateX(0) !important; opacity: 1 !important; }
+.sm-wrapper.sm-open .sm-bar-top { transform: translateY(5px) rotate(45deg); }
+.sm-wrapper.sm-open .sm-bar-mid { opacity: 0; }
+.sm-wrapper.sm-open .sm-bar-bot { transform: translateY(-5px) rotate(-45deg); }
 
 @media (max-width: 640px) {
   .sm-panel { width: 100%; left: 0; right: 0; }

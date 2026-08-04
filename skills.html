@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>技能 · YOUCAI</title>
+  <link rel="stylesheet" href="staggered-menu.css">
+  <link rel="stylesheet" href="subpage.css">
+</head>
+<body>
+
+  <!-- ===== StaggeredMenu 金色错峰导航（原生 JS 移植自 React Bits） ===== -->
+  <div class="sm-wrapper" id="sm-root" data-position="right">
+    <div class="sm-prelayers" id="sm-prelayers" aria-hidden="true"></div>
+    <header class="sm-header">
+      <a href="index.html" class="sm-logo" aria-label="YOUCAI 首页">YOUCAI</a>
+      <button class="sm-toggle" id="sm-toggle" aria-label="打开菜单" aria-expanded="false" aria-controls="sm-panel" type="button">
+        <span class="sm-icon" id="sm-icon" aria-hidden="true">
+          <span class="sm-bar sm-bar-top" id="sm-barTop"></span>
+          <span class="sm-bar sm-bar-mid" id="sm-barMid"></span>
+          <span class="sm-bar sm-bar-bot" id="sm-barBot"></span>
+        </span>
+      </button>
+    </header>
+    <aside class="sm-panel" id="sm-panel" aria-hidden="true">
+      <div class="sm-panel-inner">
+        <ul class="sm-list" id="sm-list" role="list"></ul>
+        <div class="sm-socials" id="sm-socials">
+          <h3 class="sm-socials-title">社交</h3>
+          <ul class="sm-socials-list" id="sm-socials-list" role="list"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="vignette"></div>
+
+  <main class="page-content">
+    <h1 class="page-title">技能</h1>
+    <p class="page-sub">Skills &amp; Tools</p>
+
+    <p class="lede muted">下面是我常用的一整套设计与三维工具——图标会持续循环旋转。具体的排布与动效细节，我后续再跟你说想要的样子。</p>
+
+    <div class="section-title">软件矩阵</div>
+    <div class="skill-grid">
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Ps</span></div><div class="skill-name">Photoshop</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Ai</span></div><div class="skill-name">Illustrator</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Ae</span></div><div class="skill-name">After Effects</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Pr</span></div><div class="skill-name">Premiere Pro</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Lr</span></div><div class="skill-name">Lightroom</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Bl</span></div><div class="skill-name">Blender</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">C4</span></div><div class="skill-name">Cinema 4D</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Ks</span></div><div class="skill-name">KeyShot</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Sb</span></div><div class="skill-name">Substance 3D</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Fg</span></div><div class="skill-name">Figma</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Id</span></div><div class="skill-name">InDesign</div></div>
+      <div class="skill"><div class="skill-badge"><span class="skill-ring"></span><span class="skill-initial">Su</span></div><div class="skill-name">SketchUp</div></div>
+    </div>
+  </main>
+
+  <script src="water-bg.js"></script>
+  <script src="color-bends.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="staggered-menu.js"></script>
+  <script src="subpage.js"></script>
+</body>
+</html>
