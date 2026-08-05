@@ -92,9 +92,9 @@
         opacity: 1,
         y: 0,
         filter: 'blur(0px)',
-        duration: 0.8,
+        duration: 0.7,
         ease: 'power3.out',
-        stagger: 0.06,
+        stagger: 0.045,
         overwrite: 'auto'
       });
     }

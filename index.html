@@ -52,6 +52,7 @@
     pointer-events: none;
   }
   .pl-track {
+    position: relative;
     width: min(320px, 78vw);
     height: 5px;
     margin: 0 auto;
@@ -59,6 +60,24 @@
     border-radius: 999px;
     overflow: hidden;
   }
+  /* 跨境等待期进度条数值偏低时，整条轨道持续扫光，避免看起来“卡死” */
+  .pl-track::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -45%;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 231, 176, 0.5), transparent);
+    border-radius: 999px;
+    animation: pl-indet 1.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pl-indet {
+    0% { left: -45%; }
+    100% { left: 100%; }
+  }
+  #page-loader.pl-done .pl-track::after { display: none; }
   .pl-bar {
     height: 100%;
     width: 0%;
@@ -836,6 +855,23 @@
       opacity: 1;
       pointer-events: auto;
     }
+    /* 作品详情：首图解码前的微光占位，避免“点开还在转” */
+    .wd-shimmer {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      pointer-events: none;
+      background:
+        linear-gradient(100deg, transparent 30%, rgba(255, 231, 176, 0.07) 50%, transparent 70%),
+        #0a0a0a;
+      background-size: 220% 100%, auto;
+      animation: wd-shimmer-move 1.4s ease-in-out infinite;
+    }
+    @keyframes wd-shimmer-move {
+      0% { background-position: 120% 0, 0 0; }
+      100% { background-position: -120% 0, 0 0; }
+    }
+    .work-detail-overlay:not(.wd-loading) .wd-shimmer { display: none; }
     .work-detail-header {
       position: sticky;
       top: 0;
@@ -1340,6 +1376,7 @@ window.__EDIT_OVERRIDES__ = {
     var stages = ['首次加载图片稍慢，请等待一下！', '请稍等！', '马上打开，感谢等待！'];
     var stageIdx = 0, stageEnter = 0, pageStart = 0, transitioning = false;
     var MIN_DWELL = 2.0, MIN_PER_STAGE = 2.0;
+    var builtAt = 0; // 瀑布流构建时刻，用于门控“入场动画结束后才隐藏加载层”
 
     function cache() {
       overlay = document.getElementById('page-loader');
@@ -1370,6 +1407,18 @@ window.__EDIT_OVERRIDES__ = {
       if (overlay.classList.contains('pl-done')) return;
       overlay.classList.add('pl-done');
       setTimeout(function () { if (overlay) overlay.style.display = 'none'; }, 700);
+      // 首屏就绪后：后台预取每个作品的“首图”，让点进任意作品都能秒出主图（不阻塞、无 UI）
+      if (!window.__ycIdleHero) {
+        window.__ycIdleHero = true;
+        setTimeout(idlePreloadHeroes, 500);
+      }
+    }
+    function idlePreloadHeroes() {
+      try {
+        var list = window.__ycHeroImgs;
+        if (!list || !list.length) return;
+        list.forEach(function (u) { var im = new Image(); im.src = u; });
+      } catch (e) {}
     }
     function tick() {
       if (finished) {
@@ -1391,7 +1440,11 @@ window.__EDIT_OVERRIDES__ = {
         var timeGate = elapsed >= (stageIdx + 1) * MIN_PER_STAGE;
         if (progTarget > stageIdx && (dwell >= MIN_DWELL || timeGate)) transitionTo(stageIdx + 1);
       } else {
-        if (finished && dwell >= 1.2) doHide();
+        // 退场门控：①图片已真实缓存(finished) ②三段文案已全部显示 ③瀑布流入场动画结束
+        // —— 三者同时满足才隐藏，避免“进度到100%进去后还要等图片/动画”
+        var stagesDone = (stageIdx === 2) && ((now - stageEnter) / 1000 >= 1.0);
+        var entranceOk = (builtAt && (now - builtAt) >= 2000);
+        if (finished && stagesDone && entranceOk) doHide();
       }
     }
     function startSmooth() {
@@ -1424,6 +1477,8 @@ window.__EDIT_OVERRIDES__ = {
         startSmooth();
         preload(urls, function () { if (onComplete) onComplete(); });
       },
+      // 瀑布流构建完毕时调用：记录时刻，供“入场动画结束后才隐藏加载层”门控使用
+      markBuilt: function () { builtAt = performance.now(); },
       hide: doHide
     };
     cache();
@@ -3279,11 +3334,20 @@ window.__EDIT_OVERRIDES__ = {
         }
         const masonryItems = allImages.slice(0, Math.max(1, cfg.count || 20));
 
+        // 暴露每个作品的首图 URL，供首屏加载完成后后台预取（点击作品可秒出主图）
+        var heroes = sourceWorks.map(function (k) {
+          var d = workData[k];
+          var f = (d.main || []).find(function (x) { return !/\.(mp4|webm|mov|m4v|ogg)$/i.test(x); });
+          return f ? mediaSrc(d.folder, f) : null;
+        }).filter(Boolean);
+        window.__ycHeroImgs = heroes;
+
         // 渲染函数（预加载完成后调用；此时图片已在浏览器缓存，瀑布流秒显）
         const buildNow = function () {
           if (window.buildHomeMasonry) {
             // 主路径：Masonry 瀑布流 + 黑白→彩色悬停
             window.buildHomeMasonry(grid, masonryItems, openWorkDetail);
+            if (window.YCPreloader) window.YCPreloader.markBuilt();
           } else {
             // 降级：masonry 脚本未加载时退回原卡片网格
             masonryItems.forEach(it => {
@@ -3350,6 +3414,28 @@ window.__EDIT_OVERRIDES__ = {
         main.appendChild(buildAplus(detailData));
         window.applyEditOverrides && window.applyEditOverrides();
 
+        // 该作品全部图片后台预取，打开即秒显、向下滚动也流畅
+        mainImageUrls.concat(aplusImageUrls).forEach(function (u) { var im = new Image(); im.src = u; });
+        // 首图解码前显示微光占位，decode 后移除（最多等 5s 兜底）
+        var shimmer = document.createElement('div');
+        shimmer.className = 'wd-shimmer';
+        overlay.classList.add('wd-loading');
+        overlay.appendChild(shimmer);
+        (function () {
+          var done = false;
+          var fin = function () {
+            if (done) return; done = true;
+            overlay.classList.remove('wd-loading');
+            if (shimmer.parentNode) shimmer.parentNode.removeChild(shimmer);
+          };
+          var firstSrc = mainImageUrls[0] || aplusImageUrls[0];
+          if (firstSrc) {
+            var probe = new Image();
+            probe.onload = fin; probe.onerror = fin; probe.src = firstSrc;
+          } else { fin(); }
+          setTimeout(fin, 5000);
+        })();
+
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         overlay.scrollTop = 0;
@@ -3363,9 +3449,11 @@ window.__EDIT_OVERRIDES__ = {
       }
 
       // 首页精选作品：动态渲染真实缩略图卡片（点击在 renderHomeWorks 内逐卡绑定）
-      // 等 GSAP 就位后再建 Masonry，保证入场动画可用（本 IIFE 在 vendor/gsap.min.js 之前执行）
-      if (window.gsap) renderHomeWorks();
-      else window.addEventListener('load', renderHomeWorks);
+      // 尽早启动预加载：GSAP 已就位立即建；否则 DOMContentLoaded 即建（不空等 window.load，避免加载动画被整体拖慢）
+      var _hwDone = false;
+      function _hwInit() { if (_hwDone) return; _hwDone = true; renderHomeWorks(); }
+      if (window.gsap) _hwInit();
+      else { document.addEventListener('DOMContentLoaded', _hwInit); window.addEventListener('load', _hwInit); }
 
       // ===== 首页作品设置面板（与 renderHomeWorks 同作用域） =====
       function openHomeWorksPanel() {
