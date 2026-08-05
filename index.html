@@ -1372,12 +1372,16 @@ window.__EDIT_OVERRIDES__ = {
       setTimeout(function () { if (overlay) overlay.style.display = 'none'; }, 700);
     }
     function tick() {
-      if (finished) { visualFrac = 1; }
-      else {
-        var target = Math.min(realFrac + 0.12, 0.9);
-        visualFrac += (target - visualFrac) * 0.12 + 0.004;
-        if (visualFrac > 0.9) visualFrac = 0.9;
+      if (finished) {
+        // 真实完成后，进度平滑爬升至 100%（不再瞬间跳变）
+        visualFrac += (1 - visualFrac) * 0.12;
+      } else {
+        // 进度如实跟随真实图片加载比例（realFrac），封顶 0.98，杜绝虚假 100%
+        var target = Math.min(realFrac, 0.98);
+        visualFrac += (target - visualFrac) * 0.12;
       }
+      if (visualFrac < 0.02) visualFrac = 0.02;
+      if (!finished && visualFrac > 0.98) visualFrac = 0.98;
       applyBar(visualFrac);
       var now = performance.now();
       var dwell = (now - stageEnter) / 1000;
@@ -1409,7 +1413,9 @@ window.__EDIT_OVERRIDES__ = {
       urls.forEach(function (u) {
         var im = new Image(); im.onload = tickimg; im.onerror = tickimg; im.src = u;
       });
-      setTimeout(complete, 10000);
+      // 仅作为「请求永久挂起」时的最后兜底（正常 onload/onerror 早已驱动 complete）；
+      // 不做成短超时，避免进度在图片未就绪时就被迫显示 100%。
+      setTimeout(complete, 25000);
     }
     window.YCPreloader = {
       run: function (urls, onComplete) {
@@ -1424,7 +1430,8 @@ window.__EDIT_OVERRIDES__ = {
     pageStart = performance.now(); stageEnter = performance.now();
     setStatusText(0); startSmooth();
     window.addEventListener('load', function () {
-      setTimeout(function () { if (overlay && !overlay.classList.contains('pl-done')) doHide(); }, 14000);
+      // 仅作极端兜底：window load 本身已意味着全部资源就绪，这里只是防止个别请求永久挂起
+      setTimeout(function () { if (overlay && !overlay.classList.contains('pl-done')) doHide(); }, 25000);
     });
 
     /* ---------- 2) MagicRings 中心视觉（原生 WebGL，金色光环，内联即时渲染） ---------- */
