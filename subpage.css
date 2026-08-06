@@ -171,6 +171,17 @@ body {
   margin-right: 0.45em;
   letter-spacing: 0.08em;
 }
+/* 信息行内可点击的词语（如 1999年/狮子座/湖南常宁） */
+.info-item a.inline-link {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(240, 208, 137, 0.5);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.info-item a.inline-link:hover {
+  color: #fff;
+  border-bottom-color: var(--gold);
+}
 .tag-group,
 .hobby-group {
   display: flex;
