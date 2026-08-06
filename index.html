@@ -1370,6 +1370,15 @@ window.__EDIT_OVERRIDES__ = {
   <!-- 加载动画控制器（逻辑内联，HTML 解析即启动：进度 + 三段小字 + MagicRings，不依赖跨境外部脚本） -->
   <script>
   (function () {
+    /* ---------- 0) 同会话内只显示一次（点 logo/首页返回不再重复播放加载动画） ---------- */
+    var YC_LOADER_KEY = 'yc_loader_done';
+    try {
+      if (sessionStorage.getItem(YC_LOADER_KEY)) {
+        var __ov = document.getElementById('page-loader');
+        if (__ov) { __ov.classList.add('pl-done'); __ov.style.display = 'none'; }
+        return; // 本次会话已加载过：直接隐藏首屏动画，不启动进度/预加载
+      }
+    } catch (e) {}
     /* ---------- 1) 进度条 + 三段小字（即时启动，状态机保证三段都显示） ---------- */
     var overlay, barEl, pctEl, statusEl, smoothTimer = null;
     var realFrac = 0.02, visualFrac = 0.02, finished = false, hidden = false;
@@ -1404,6 +1413,7 @@ window.__EDIT_OVERRIDES__ = {
     function doHide() {
       if (hidden || !overlay) return;
       hidden = true;
+      try { sessionStorage.setItem(YC_LOADER_KEY, '1'); } catch (e) {}
       if (overlay.classList.contains('pl-done')) return;
       overlay.classList.add('pl-done');
       setTimeout(function () { if (overlay) overlay.style.display = 'none'; }, 700);
