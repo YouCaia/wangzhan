@@ -31,6 +31,9 @@
     if (played) return;
     played = true;
 
+    // 移除 preload（由 inline 脚本加上的首屏隐藏），交还给 GSAP/CSS 控制
+    grid.classList.remove('preload');
+
     if (typeof gsap === 'undefined') {
       pills.forEach(function (p) { p.style.transform = 'scale(1)'; });
       labels.forEach(function (l) { l.style.opacity = '1'; });

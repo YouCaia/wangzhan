@@ -95,3 +95,11 @@
     z-index: 2;
   }
 }
+
+/* 入场动画接管前先隐藏，避免切到技能页时 pill 闪现一下的 FOUC。
+   该 class 由 skills.html 的 inline 脚本在解析到 grid 时立即加上，
+   GSAP 接管后由 bubble-tools.js 移除。JS 失效时不会加此 class，pill 正常显示。 */
+.tool-pill-grid.preload .tool-pill,
+.tool-pill-grid.preload .tool-pill-label {
+  opacity: 0;
+}

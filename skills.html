@@ -55,6 +55,14 @@
       <span class="tool-pill" style="--item-rot:8deg"><span class="tool-pill-label">Chatgpt</span></span>
       <span class="tool-pill" style="--item-rot:-8deg"><span class="tool-pill-label">Dreamina</span></span>
     </div>
+
+    <!-- 解析到网格立即隐藏 pill，杜绝切页时闪现（GSAP 接管后由 bubble-tools.js 移除） -->
+    <script>
+      (function () {
+        var g = document.getElementById('toolPillGrid');
+        if (g) g.classList.add('preload');
+      })();
+    </script>
   </main>
 
   <script src="water-bg.js"></script>
