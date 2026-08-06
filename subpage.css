@@ -153,6 +153,108 @@ body {
 }
 .fact p { margin: 0; color: var(--ink); line-height: 1.7; font-size: 0.98rem; }
 
+/* ---------- 信息页：简介行、标签、爱好 ---------- */
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.8rem;
+  margin: 1.5rem 0 1.1rem;
+}
+.info-item {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.info-item strong {
+  display: inline-block;
+  color: var(--gold-mid);
+  font-weight: 600;
+  margin-right: 0.45em;
+  letter-spacing: 0.08em;
+}
+.tag-group,
+.hobby-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+.tag,
+.hobby {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35em 0.95em;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  border: 1px solid var(--border);
+  background: rgba(212, 168, 87, 0.08);
+  color: var(--ink);
+}
+.tag {
+  background: linear-gradient(135deg, rgba(212,168,87,0.16), rgba(201,138,59,0.10));
+  color: var(--gold);
+}
+
+/* ---------- 信息页：经历时间线 ---------- */
+.timeline {
+  position: relative;
+  margin: 0.4rem 0 0 0.6rem;
+  padding-left: 1.5rem;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gold-mid), var(--gold-deep) 60%, transparent);
+  opacity: 0.45;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+}
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-dot {
+  position: absolute;
+  left: -1.5rem;
+  top: 0.35rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px rgba(240, 208, 137, 0.12);
+}
+.timeline-date {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--gold-mid);
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+.timeline-title {
+  margin: 0 0 0.55rem;
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+.timeline-item p {
+  margin: 0 0 0.5rem;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  font-size: 0.96rem;
+}
+.timeline-item p:last-child { margin-bottom: 0; }
+
+/* ---------- 信息页：教育网格 ---------- */
+.edu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+  margin-top: 0.4rem;
+}
+.edu-grid .fact p + p { margin-top: 0.4rem; }
+
 /* ---------- 联系：卡片 + 复制 ---------- */
 .contact-grid {
   display: grid;
@@ -205,4 +307,7 @@ body {
 @media (max-width: 640px) {
   .page-content { padding: 7rem 1.2rem 4rem; }
   .card { padding: 1.5rem 1.3rem; }
+  .info-row { gap: 0.7rem 1.2rem; }
+  .timeline { padding-left: 1.2rem; }
+  .timeline-dot { left: -1.2rem; }
 }
