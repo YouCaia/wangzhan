@@ -171,15 +171,19 @@ body {
   margin-right: 0.45em;
   letter-spacing: 0.08em;
 }
-/* 信息行内可点击的词语：外观与普通文字完全一致，仅默默带超链接（点击新标签打开） */
+/* 信息行内可点击的词语：外观与普通文字完全一致，仅默默带超链接（点击新标签打开）；
+   hover 时轻微放大作为点击反馈 */
 .info-item a.inline-link {
+  display: inline-block;
   color: inherit;
   text-decoration: none;
   cursor: default;
+  transition: transform 0.15s ease;
 }
 .info-item a.inline-link:hover {
   color: inherit;
   text-decoration: none;
+  transform: scale(1.08);
 }
 .tag-group,
 .hobby-group {
