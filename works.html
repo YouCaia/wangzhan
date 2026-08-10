@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231a130a'/><text x='16' y='22' font-family='Georgia,serif' font-size='20' font-weight='700' text-anchor='middle' fill='%23f0d089'>Y</text></svg>">
   <title>作品集 — YOUCAI 亚马逊电商设计师</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/tailwind.min.css">
   <script src="lightbox.js"></script>
   <link rel="stylesheet" href="staggered-menu.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -559,7 +559,7 @@
     // ============================================
     // 图片放在 images/works/作品文件夹/ 下
     // 主图命名: main-1.jpg, main-2.jpg, ... (1:1 比例)
-    // A+命名:  a1.jpg, a2.jpg, ... (970x600 或 1460x600)
+    // A+命名:  a1.webp, a2.webp, ... (970x600 或 1460x600)
     //
     const works = [
       {
@@ -568,11 +568,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原精油质地与光泽，突出天然成分卖点。',
         folder: '美妆/L-牛至油/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -582,11 +582,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为洗护品牌打造的高转化主图，精准还原产品质地与光泽，配合场景化构图提升点击率。',
         folder: '美妆/M-洗发水/',
-        main: ['z.mp4', 'z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z.mp4', 'z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -596,11 +596,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/M-牛油霜小瓶/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }, { file: 'a8.jpg', width: 1460 }, { file: 'a9.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }, { file: 'a8.webp', width: 1460 }, { file: 'a9.webp', width: 1460 }
           ]
         }
       },
@@ -610,7 +610,7 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/M-疤痕贴-紫/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
@@ -624,11 +624,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/M-疤痕贴-绿/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 970 }, { file: 'a2.jpg', width: 970 }, { file: 'a3.jpg', width: 970 }, { file: 'a4.jpg', width: 970 }, { file: 'a5.jpg', width: 970 }, { file: 'a6.jpg', width: 970 }
+            { file: 'a1.webp', width: 970 }, { file: 'a2.webp', width: 970 }, { file: 'a3.webp', width: 970 }, { file: 'a4.webp', width: 970 }, { file: 'a5.webp', width: 970 }, { file: 'a6.webp', width: 970 }
           ]
         }
       },
@@ -638,11 +638,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为美妆品牌打造的高转化主图，精准还原膏体质感与光泽，配合场景化构图提升点击率。',
         folder: '美妆/M-美白霜/',
-        main: ['z.mp4', 'z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z.mp4', 'z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -652,11 +652,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/M-麻木膏/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 970 }, { file: 'a2.jpg', width: 970 }, { file: 'a3.jpg', width: 970 }, { file: 'a4.jpg', width: 970 }, { file: 'a5.jpg', width: 970 }
+            { file: 'a1.webp', width: 970 }, { file: 'a2.webp', width: 970 }, { file: 'a3.webp', width: 970 }, { file: 'a4.webp', width: 970 }, { file: 'a5.webp', width: 970 }
           ]
         }
       },
@@ -666,11 +666,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/O-伤口贴/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -680,11 +680,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/O-祛斑霜/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -694,11 +694,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的护肤主图，突出 VC 成分的鲜活质感与提亮卖点。',
         folder: '美妆/W-VC霜/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -708,11 +708,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/W-疤痕霜按压瓶/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }, { file: 'a8.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }, { file: 'a8.webp', width: 1460 }
           ]
         }
       },
@@ -722,11 +722,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的眼膜主图，强调服帖与修护功效，配合场景化构图提升点击率。',
         folder: '美妆/W-眼膜/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }, { file: 'a8.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }, { file: 'a8.webp', width: 1460 }
           ]
         }
       },
@@ -736,11 +736,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美白霜主图，还原膏体质感与光泽，强化美白卖点。',
         folder: '美妆/W-美白霜/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -750,11 +750,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为客户定制的美妆主图，精准还原产品质地与光泽，突出核心卖点。',
         folder: '美妆/W-美白霜100ml/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }
           ]
         }
       },
@@ -764,11 +764,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为宠物护理产品定制的主图，突出功效与温和配方，贴合养宠人群审美。',
         folder: '宠物/BN-猫床/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }
           ]
         }
       },
@@ -778,11 +778,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为宠物护理产品定制的主图，突出护抓功效与温和配方，贴合养宠人群审美。',
         folder: '宠物/L-宠物护抓膏/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -792,11 +792,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为宠物护理产品定制的主图，突出功效与温和配方，贴合养宠人群审美。',
         folder: '宠物/M-猫砂盆/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -806,11 +806,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为宠物护理产品定制的主图，突出功效与温和配方，贴合养宠人群审美。',
         folder: '宠物/OZ-猫抓柱/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }
           ]
         }
       },
@@ -820,11 +820,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为宠物护理产品定制的主图，突出功效与温和配方，贴合养宠人群审美。',
         folder: '宠物/OZ-除毛器/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 970 }, { file: 'a2.jpg', width: 970 }, { file: 'a3.jpg', width: 970 }, { file: 'a4.jpg', width: 970 }, { file: 'a5.jpg', width: 970 }, { file: 'a6.jpg', width: 970 }
+            { file: 'a1.webp', width: 970 }, { file: 'a2.webp', width: 970 }, { file: 'a3.webp', width: 970 }, { file: 'a4.webp', width: 970 }, { file: 'a5.webp', width: 970 }, { file: 'a6.webp', width: 970 }
           ]
         }
       },
@@ -834,11 +834,11 @@
         tags: '产品精修 · 场景合成 · 卖点可视化',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/BN-裤架/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg', 'z9.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp', 'z9.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -848,11 +848,11 @@
         tags: '产品精修 · 场景合成 · 卖点可视化',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/BP-铰链扳手/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -862,11 +862,11 @@
         tags: '产品精修 · 场景合成 · 卖点可视化',
         desc: '为日用百货产品定制的主图，强调便捷安装与防护功能，画面干净易读。',
         folder: '日用百货/L-水龙头套/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -876,11 +876,11 @@
         tags: '产品精修 · 场景合成 · 卖点可视化',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/OZ-枕头/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -890,11 +890,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/OZ-臭氧机/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a10.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }, { file: 'a8.jpg', width: 1460 }, { file: 'a9.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a10.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }, { file: 'a8.webp', width: 1460 }, { file: 'a9.webp', width: 1460 }
           ]
         }
       },
@@ -904,11 +904,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/P-单色灯夕阳/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 970 }, { file: 'a2.jpg', width: 970 }, { file: 'a3.jpg', width: 970 }, { file: 'a4.jpg', width: 970 }, { file: 'a5.jpg', width: 970 }, { file: 'a6.jpg', width: 970 }
+            { file: 'a1.webp', width: 970 }, { file: 'a2.webp', width: 970 }, { file: 'a3.webp', width: 970 }, { file: 'a4.webp', width: 970 }, { file: 'a5.webp', width: 970 }, { file: 'a6.webp', width: 970 }
           ]
         }
       },
@@ -918,11 +918,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/P-四脚落日灯/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }
           ]
         }
       },
@@ -932,11 +932,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为日用百货产品定制的主图，强调便捷实用与功能卖点，画面干净易读。',
         folder: '日用百货/P-机器人星空灯/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -946,11 +946,11 @@
         tags: '安全温和 · 贴心设计 · 母婴美学',
         desc: '为母婴产品定制的主图，突出安全温和与贴心设计，传递安心感。',
         folder: '母婴-玩具/OZ-儿童忙碌板/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }
           ]
         }
       },
@@ -960,11 +960,11 @@
         tags: '安全温和 · 贴心设计 · 母婴美学',
         desc: '为母婴产品定制的主图，突出安全温和与贴心设计，传递安心感。',
         folder: '母婴-玩具/P-儿童画板/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }
           ]
         }
       },
@@ -974,11 +974,11 @@
         tags: '安全温和 · 贴心设计 · 母婴美学',
         desc: '为母婴产品定制的主图，突出安全温和与贴心设计，传递安心感。',
         folder: '母婴-玩具/T-机器人/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z9.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z9.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -988,11 +988,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为节日主题产品定制的主图，营造氛围感与节日仪式感，强化购买冲动。',
         folder: '节日/M-万圣节女巫/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }
           ]
         }
       },
@@ -1002,11 +1002,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为节日主题产品定制的主图，营造氛围感与节日仪式感，强化购买冲动。',
         folder: '节日/M-圣诞户外求生日历盲盒/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }, { file: 'a6.jpg', width: 1460 }, { file: 'a7.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }, { file: 'a6.webp', width: 1460 }, { file: 'a7.webp', width: 1460 }
           ]
         }
       },
@@ -1016,11 +1016,11 @@
         tags: '产品精修 · 质感特写 · 主图合成',
         desc: '为节日主题产品定制的主图，营造氛围感与节日仪式感，强化购买冲动。',
         folder: '节日/W-圣诞鱼钩盲盒/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg', 'z7.jpg', 'z8.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp', 'z7.webp', 'z8.webp'],
         aplus: {
           mode: 'seamless',
           images: [
-            { file: 'a1.jpg', width: 1460 }, { file: 'a2.jpg', width: 1460 }, { file: 'a3.jpg', width: 1460 }, { file: 'a4.jpg', width: 1460 }, { file: 'a5.jpg', width: 1460 }
+            { file: 'a1.webp', width: 1460 }, { file: 'a2.webp', width: 1460 }, { file: 'a3.webp', width: 1460 }, { file: 'a4.webp', width: 1460 }, { file: 'a5.webp', width: 1460 }
           ]
         }
       },
@@ -1030,7 +1030,7 @@
         tags: '3D 建模 · 材质灯光 · 产品渲染',
         desc: '原创 3D 建模与材质渲染作品，精细还原玩具车结构与质感。',
         folder: '建模/玩具车/',
-        main: ['z1.jpg', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp'],
         aplus: { mode: 'seamless', images: [] }
       },
       {
@@ -1039,7 +1039,7 @@
         tags: '3D 建模 · 材质灯光 · 产品渲染',
         desc: '原创 3D 建模与材质渲染作品，精准呈现医疗器械的形态与细节。',
         folder: '建模/注射器/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp'],
         aplus: { mode: 'seamless', images: [] }
       },
       {
@@ -1048,7 +1048,7 @@
         tags: '3D 建模 · 材质灯光 · 产品渲染',
         desc: '原创 3D 建模与材质渲染作品，细致刻画个护产品的造型与质感。',
         folder: '建模/假牙清洗器/',
-        main: ['z1.jpg', 'z2.jpg', 'z3.jpg', 'z4.jpg', 'z5.jpg', 'z6.jpg'],
+        main: ['z1.webp', 'z2.webp', 'z3.webp', 'z4.webp', 'z5.webp', 'z6.webp'],
         aplus: { mode: 'seamless', images: [] }
       }
     ];
@@ -1301,7 +1301,7 @@
         const thumb = document.createElement('div');
         thumb.className = 'work-card-thumb';
 
-        const firstImg = (work.main || []).find(f => !f.match(/\.(mp4|webm|mov|m4v|ogg)$/i)) || 'z1.jpg';
+        const firstImg = (work.main || []).find(f => !f.match(/\.(mp4|webm|mov|m4v|ogg)$/i)) || 'z1.webp';
         const coverSrc = mediaSrc(work.folder, firstImg);
         const coverImg = createMedia(coverSrc, work.title, '放主图: ' + firstImg);
         thumb.appendChild(coverImg);
