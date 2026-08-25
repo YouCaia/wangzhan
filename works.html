@@ -1087,7 +1087,11 @@
     const categories = ['全部', '美妆', '宠物', '日用百货', '母婴-玩具', '节日', '3C', '建模', '渲染', '动画视频'];
 
     // 独立视频：放在 images/动画视频/ 下的单独 mp4（由同步脚本在用户新增时自动补全）
-    const standaloneVideos = [];
+    const standaloneVideos = [
+      { folder: '动画视频/注射器/',   file: 'z.mp4', title: '注射器' },
+      { folder: '动画视频/洗发水-w/', file: 'z.mp4', title: '洗发水-w' },
+      { folder: '动画视频/肥皂/',     file: 'z.mp4', title: '肥皂' }
+    ];
     // 聚合全站视频 → 用于“动画视频”分类（作品内的 z.mp4 / a.mp4 + 独立视频）
     function getVideoList() {
       const list = [];
