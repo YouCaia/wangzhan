@@ -166,18 +166,6 @@
       min-height: 16px; letter-spacing: 0.02em;
     }
     .search-hint b { color: #e8b864; font-weight: 600; }
-    .search-reset-btn {
-      margin-top: 18px; padding: 9px 24px;
-      border-radius: 999px; border: 1px solid rgba(212,168,87,0.4);
-      background: rgba(212,168,87,0.1);
-      color: #f0d089; font-size: 12px; cursor: pointer;
-      transition: all 0.3s;
-      font-family: inherit;
-    }
-    .search-reset-btn:hover {
-      background: linear-gradient(135deg, #f0d089, #d4a857);
-      color: #0a0a0a; border-color: transparent;
-    }
 
     /* ========== Works grid ========== */
     .works-grid {
@@ -1487,10 +1475,7 @@
         grid.innerHTML = '<div class="empty-state">'
           + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
           + '<p>没有搜索到相关结果？</p>'
-          + '<p style="font-size:13px;opacity:.55;margin-top:8px;">请返回或者检查文字是否输入错误！</p>'
-          + '<button class="search-reset-btn" type="button">返回全部作品</button></div>';
-        const btn = grid.querySelector('.search-reset-btn');
-        if (btn) btn.addEventListener('click', resetSearch);
+          + '<p style="font-size:13px;opacity:.55;margin-top:8px;">请返回或者检查文字是否输入错误！</p></div>';
         updateSearchHint(0, raw);
         return;
       }
