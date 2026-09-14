@@ -155,8 +155,8 @@
     <button class="wb-lightbox-arrow prev" aria-label="上一张"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
     <button class="wb-lightbox-arrow next" aria-label="下一张"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
     <div class="wb-lightbox-stage">
-      <img class="wb-lightbox-img" src="" alt="">
-      <video class="wb-lightbox-video" src="" style="display:none"></video>
+      <img class="wb-lightbox-img" alt="">
+      <video class="wb-lightbox-video" style="display:none"></video>
     </div>
     <div class="wb-lightbox-hint">点击图片关闭 · 滚轮缩放 · 左右滑动切换</div>
   `;
@@ -249,7 +249,7 @@
     document.body.style.overflow = '';
     try { video.pause(); } catch (_) {}
     video.style.display = 'none';
-    setTimeout(() => { img.src = ''; video.removeAttribute('src'); }, 300);
+    setTimeout(() => { img.removeAttribute('src'); video.removeAttribute('src'); }, 300);
   }
 
   function prev() {
