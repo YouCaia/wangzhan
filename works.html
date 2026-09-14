@@ -1087,9 +1087,9 @@
 
     // 独立视频：放在 images/动画视频/ 下的单独 mp4（由同步脚本在用户新增时自动补全）
     const standaloneVideos = [
-      { folder: '动画视频/注射器/',   file: 'z.mp4', title: '注射器' },
-      { folder: '动画视频/洗发水-w/', file: 'z.mp4', title: '洗发水-w' },
-      { folder: '动画视频/肥皂/',     file: 'z.mp4', title: '肥皂' }
+      { folder: '动画视频/W-注射器/',  file: 'z.mp4', title: 'W-注射器' },
+      { folder: '动画视频/W-洗发水/',  file: 'z.mp4', title: 'W-洗发水' },
+      { folder: '动画视频/W-肥皂/',    file: 'z.mp4', title: 'W-肥皂' }
     ];
     // 聚合全站视频 → 用于“动画视频”分类（作品内的 z.mp4 / a.mp4 + 独立视频）
     function getVideoList() {
@@ -1275,6 +1275,27 @@
           link.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openDetail(v.workIndex); });
           info.appendChild(link);
         }
+
+        // 全屏播放：打开灯箱大播放器（自动播放，原生控件自带全屏按钮）
+        function openFullscreen() {
+          try { video.pause(); } catch (_) {}
+          const fn = window.openLightbox;
+          if (typeof fn === 'function') fn([mediaSrc(v.folder, v.file)], 0);
+        }
+        const fsLink = document.createElement('a');
+        fsLink.href = 'javascript:void(0)';
+        fsLink.className = 'video-open-full';
+        fsLink.textContent = '全屏播放 →';
+        fsLink.style.cssText = 'display:inline-block;margin-top:6px;'
+          + (v.workIndex >= 0 ? 'margin-left:12px;' : '')
+          + 'color:#e8b864;font-size:12px;cursor:pointer;';
+        fsLink.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openFullscreen(); });
+        info.appendChild(fsLink);
+        // 点标题也能打开大播放器（与作品“点击放大”的操作习惯一致）
+        h3.style.cursor = 'pointer';
+        h3.title = '点击全屏播放';
+        h3.addEventListener('click', (e) => { e.stopPropagation(); openFullscreen(); });
+
         grid.appendChild(card);
       });
     }
