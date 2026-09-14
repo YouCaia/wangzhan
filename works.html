@@ -117,6 +117,68 @@
       font-size: 11px; opacity: 0.6; margin-left: 4px;
     }
 
+    /* ========== Search box ========== */
+    .search-wrap {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 10px; padding: 0 24px 22px;
+    }
+    .search-box {
+      position: relative;
+      width: 100%; max-width: 460px;
+    }
+    .search-box .search-icon {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      color: rgba(255,255,255,0.32); pointer-events: none;
+    }
+    #works-search {
+      width: 100%;
+      padding: 12px 44px 12px 44px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: #fff;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      outline: none;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #works-search::placeholder { color: rgba(255,255,255,0.28); }
+    #works-search:focus {
+      border-color: rgba(212,168,87,0.45);
+      background: rgba(212,168,87,0.06);
+      box-shadow: 0 4px 22px rgba(212,168,87,0.15);
+    }
+    .search-clear {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      width: 24px; height: 24px; border-radius: 50%;
+      border: none; background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+      font-size: 15px; line-height: 1;
+      transition: all 0.25s;
+    }
+    .search-clear:hover { background: rgba(212,168,87,0.28); color: #fff; }
+    .search-clear.visible { display: flex; }
+    .search-hint {
+      font-size: 12px; color: rgba(255,255,255,0.35);
+      min-height: 16px; letter-spacing: 0.02em;
+    }
+    .search-hint b { color: #e8b864; font-weight: 600; }
+    .search-reset-btn {
+      margin-top: 18px; padding: 9px 24px;
+      border-radius: 999px; border: 1px solid rgba(212,168,87,0.4);
+      background: rgba(212,168,87,0.1);
+      color: #f0d089; font-size: 12px; cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    .search-reset-btn:hover {
+      background: linear-gradient(135deg, #f0d089, #d4a857);
+      color: #0a0a0a; border-color: transparent;
+    }
+
     /* ========== Works grid ========== */
     .works-grid {
       position: relative; z-index: 10;
@@ -519,6 +581,16 @@
     <h1 data-edit="works-page-title">作品<span class="accent">集</span></h1>
     <p data-edit="works-page-sub">3D 渲染 · A+ 页面 · 产品建模 · 品牌视觉<br/>每一件作品都是对极致视觉的追求</p>
   </section>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="works-search" placeholder="搜索作品名称、分类、标签…" autocomplete="off">
+      <button class="search-clear" id="search-clear" aria-label="清除搜索">&times;</button>
+    </div>
+    <div class="search-hint" id="search-hint"></div>
+  </div>
 
   <!-- Filter -->
   <div class="filter-bar" id="filter-bar"></div>
@@ -1080,6 +1152,7 @@
     const grid = document.getElementById('works-grid');
     const filterBar = document.getElementById('filter-bar');
     let currentFilter = '全部';
+    let searchQuery = '';
     let currentDetailIndex = 0;
 
     // 固定分类列表（含空类目，确保即使暂无作品也显示出来；顺序即展示顺序）
@@ -1116,6 +1189,14 @@
       filterBar.querySelectorAll('.filter-pill').forEach(pill => {
         pill.addEventListener('click', () => {
           currentFilter = pill.dataset.cat;
+          // 切换分类时清空搜索，避免“搜索结果 + 分类”双重过滤造成困惑
+          searchQuery = '';
+          const siEl = document.getElementById('works-search');
+          const scEl = document.getElementById('search-clear');
+          const shEl = document.getElementById('search-hint');
+          if (siEl) siEl.value = '';
+          if (scEl) scEl.classList.remove('visible');
+          if (shEl) shEl.textContent = '';
           filterBar.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
           pill.classList.add('active');
           renderGrid();
@@ -1195,15 +1276,18 @@
       });
     }
     // 渲染动画视频聚合分类（收集全站 mp4 + 独立视频）
-    function renderVideoGallery() {
-      const vids = getVideoList();
-      if (vids.length === 0) {
-        grid.innerHTML = '<div class="empty-state">'
-          + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
-          + '<p>动画视频分类下暂无视频</p></div>';
-        return;
+    // vidsOverride: 传入已过滤的视频列表（搜索结果用）；appendMode: 追加到现有内容之后，不清空网格
+    function renderVideoGallery(vidsOverride, appendMode) {
+      const vids = vidsOverride || getVideoList();
+      if (!appendMode) {
+        if (vids.length === 0) {
+          grid.innerHTML = '<div class="empty-state">'
+            + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+            + '<p>动画视频分类下暂无视频</p></div>';
+          return;
+        }
+        grid.innerHTML = '';
       }
-      grid.innerHTML = '';
       vids.forEach((v, i) => {
         const card = document.createElement('div');
         card.className = 'work-card video-card';
@@ -1302,6 +1386,8 @@
 
     // 渲染作品网格
     function renderGrid() {
+      // 有搜索词时优先走搜索（跨全部分类查找）
+      if (searchQuery && searchQuery.trim()) { renderSearchResults(); return; }
       if (currentFilter === '动画视频') { renderVideoGallery(); return; }
       const filtered = currentFilter === '全部'
         ? works
@@ -1315,7 +1401,11 @@
       }
 
       grid.innerHTML = '';
-      filtered.forEach((work, i) => {
+      filtered.forEach((work, i) => grid.appendChild(createWorkCard(work, i)));
+    }
+
+    // 创建单个作品卡片（普通列表与搜索结果共用）
+    function createWorkCard(work, i) {
         const realIndex = works.indexOf(work);
         const card = document.createElement('div');
         card.className = 'work-card';
@@ -1352,7 +1442,92 @@
         card.appendChild(info);
 
         card.addEventListener('click', () => openDetail(realIndex));
-        grid.appendChild(card);
+        return card;
+    }
+
+    // ============================================
+    // 搜索：跨全部分类匹配作品（名称/分类/标签/描述/目录）与视频
+    // ============================================
+    const searchInput = document.getElementById('works-search');
+    const searchClear = document.getElementById('search-clear');
+    const searchHint = document.getElementById('search-hint');
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function norm(s) { return String(s == null ? '' : s).toLowerCase(); }
+
+    function workMatches(w, q) {
+      return norm((w.title || '') + ' ' + (w.category || '') + ' ' + (w.tags || '') + ' ' + (w.desc || '') + ' ' + (w.folder || '')).indexOf(q) !== -1;
+    }
+    function videoMatches(v, q) {
+      return norm((v.title || '') + ' ' + (v.sub || '') + ' ' + (v.folder || '') + ' ' + (v.file || '')).indexOf(q) !== -1;
+    }
+
+    function updateSearchHint(total, keyword) {
+      if (!searchHint) return;
+      if (!searchQuery || !searchQuery.trim()) { searchHint.textContent = ''; return; }
+      searchHint.innerHTML = total > 0
+        ? '找到 <b>' + total + '</b> 个与“' + esc(keyword) + '”相关的结果'
+        : '没有找到与“' + esc(keyword) + '”相关的结果';
+    }
+
+    function renderSearchResults() {
+      const raw = searchQuery.trim();
+      const q = raw.toLowerCase();
+      if (!q) { renderGrid(); return; }
+
+      const matchedWorks = works.filter(w => workMatches(w, q));
+      const matchedVideos = getVideoList().filter(v => videoMatches(v, q));
+      const total = matchedWorks.length + matchedVideos.length;
+
+      if (total === 0) {
+        grid.innerHTML = '<div class="empty-state">'
+          + '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+          + '<p>没有搜索到相关结果？</p>'
+          + '<p style="font-size:13px;opacity:.55;margin-top:8px;">请返回或者检查文字是否输入错误！</p>'
+          + '<button class="search-reset-btn" type="button">返回全部作品</button></div>';
+        const btn = grid.querySelector('.search-reset-btn');
+        if (btn) btn.addEventListener('click', resetSearch);
+        updateSearchHint(0, raw);
+        return;
+      }
+
+      grid.innerHTML = '';
+      matchedWorks.forEach((w, i) => grid.appendChild(createWorkCard(w, i)));
+      if (matchedVideos.length) renderVideoGallery(matchedVideos, true);
+      updateSearchHint(total, raw);
+    }
+
+    function resetSearch() {
+      searchQuery = '';
+      if (searchInput) searchInput.value = '';
+      if (searchClear) searchClear.classList.remove('visible');
+      if (searchHint) searchHint.textContent = '';
+      currentFilter = '全部';
+      renderFilters();
+      renderGrid();
+    }
+
+    if (searchInput) {
+      let searchTimer = null;
+      searchInput.addEventListener('input', function () {
+        searchQuery = searchInput.value;
+        if (searchClear) searchClear.classList.toggle('visible', !!searchQuery);
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(renderGrid, 180);
+      });
+      searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { clearTimeout(searchTimer); renderGrid(); }
+        if (e.key === 'Escape') { clearTimeout(searchTimer); resetSearch(); }
+      });
+    }
+    if (searchClear) {
+      searchClear.addEventListener('click', function () {
+        resetSearch();
+        if (searchInput) searchInput.focus();
       });
     }
 
