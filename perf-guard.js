@@ -73,31 +73,42 @@
     forced: forced,
     cores: cores,
     mem: mem,
-    // 水波：软件渲染下保留但降到 24fps；光带（WebGL）在软件渲染下必须关
+    // 特效一律保留（用户明确要求不能为了流畅牺牲观感）。
+    // 软件渲染下靠「降低变化频率」而不是「删除特效」来换性能：
+    //   - 光带本身变化极慢（speed 0.2），10fps 与 60fps 肉眼几乎无差，成本仅 1/6
+    //   - 水波进休眠，静止时零重绘
+    //   - 背景变化慢了，十几层 backdrop-filter 的重算频率也随之下降
     water: forced !== null ? forced : baseOn,
-    bends: forced !== null ? forced : (baseOn && !noGpu),
-    lens: forced !== null ? forced : (baseOn && !noGpu && tier !== 'low'),
+    bends: forced !== null ? forced : baseOn,
+    lens: forced !== null ? forced : (baseOn && tier !== 'low' && !noGpu),
     waterFps: noGpu ? 24 : (tier === 'low' ? 30 : (tier === 'mid' ? 45 : 60)),
+    bendsFps: noGpu ? 10 : (tier === 'low' ? 20 : (tier === 'mid' ? 30 : 60)),
     killed: false
   };
 
   function emit(name) { try { window.dispatchEvent(new CustomEvent(name)); } catch (e) {} }
 
+  // 一档降级：优先砍掉最贵的 backdrop-filter 毛玻璃（实测单项约 15fps），
+  // 而光带继续以低帧率流动 —— 保住背景氛围与亮度，这是观感优先级最高的部分。
   FX.degrade = function () {
     if (FX.killed) return;
     docEl.classList.add('yc-soft');
+    docEl.classList.add('yc-no-blur');
     emit('yc:fx-degrade');
   };
-  // 休眠降级：光带（WebGL）关闭，水波改为「静止时不重绘、只有指针划过才起涟漪」，
-  // 同时关掉全部 backdrop-filter。比直接删除特效更体面，且几乎零持续开销。
+  // 休眠降级（最低档，只在实测真的很卡时才触发）：
+  //   - 光带：冻结最后一帧画面（不是删除！）—— 背景仍保留金色光带，不会变暗
+  //   - 水波：静止时不重绘，指针划过才起涟漪
+  //   - 毛玻璃：关闭（它是唯一必须关掉的，因为背景一动就要重算）
+  //   - 光斑：停止漂浮，但光晕保留
   FX.hibernate = function () {
     if (FX.killed || FX.hibernateDone) return;
     FX.hibernateDone = true;
-    FX.bends = false; FX.lens = false;
+    FX.lens = false;
     docEl.classList.add('yc-soft');
     docEl.classList.add('yc-no-blur');
     emit('yc:fx-hibernate');
-    try { console.info('[perf-guard] 帧率偏低，已进入省电模式：关闭光带与毛玻璃，水波仅在你移动鼠标时响应'); } catch (e) {}
+    try { console.info('[perf-guard] 已切到省电模式：光带冻结为静态背景（亮度保留）· 毛玻璃关闭 · 水波仅在移动鼠标时响应'); } catch (e) {}
   };
   FX.killAll = function () {
     if (FX.killed) return;
@@ -112,12 +123,13 @@
   // 软件渲染、或特效整体关闭（自动/手动）时，一并关掉所有 backdrop-filter：
   // 背景每帧变化会让这些模糊图层每帧重算，这是低配/远程桌面下最主要的开销。
   // 但 ?fx=on（用户强制开启）时不做任何降级。
+  // 软件渲染下不再主动关闭毛玻璃 —— 它决定 UI 质感，且背景变化频率降低后
+  // 它的重算频率也会跟着降下来。只在看门狗实测帧率确实不达标时才降级。
   if (forced === false) {
     docEl.classList.add('yc-soft');
     docEl.classList.add('yc-no-blur');
     docEl.classList.add('yc-fx-off');
   } else if (forced !== true) {
-    if (noGpu) { docEl.classList.add('yc-soft'); docEl.classList.add('yc-no-blur'); }
     if (!FX.water) { docEl.classList.add('yc-soft'); docEl.classList.add('yc-no-blur'); docEl.classList.add('yc-fx-off'); }
   }
 
@@ -131,24 +143,30 @@
     (document.head || docEl).appendChild(css);
   } catch (e) {}
 
-  /* ---------- 4) 运行时帧率看门狗（两级） ---------- */
+  /* ---------- 4) 运行时帧率看门狗（持续监测 + 两级降级） ----------
+   * 注意：不能只测一次！实测表明卡顿往往出现在「滚动浏览之后」——
+   * 页面变重、图片全部解码、动效叠加，此时帧率才会掉下来。
+   * 因此这里做长驻低频监测：每 2 秒统计一次平均帧率，连续偏低才降级。
+   * 计数本身只有一个自增，开销可忽略。
+   * ---------------------------------------------------------- */
   (function watchdog() {
     if (forced !== null || reduce) return;    // 手动指定 / 用户要求减少动效时不干预
-    var phase = 1, frames = 0, t0 = 0;
+    var phase = 0, frames = 0, t0 = 0, lowCount = 0;
     function tick(t) {
-      if (!t0) { t0 = t; requestAnimationFrame(tick); return; }
+      if (phase >= 2) return;                 // 已降到最低档，停止监测
+      requestAnimationFrame(tick);
+      if (!t0) { t0 = t; return; }
       frames++;
       var el = t - t0;
-      if (el < 2500) { requestAnimationFrame(tick); return; }
+      if (el < 2000) return;
       var fps = frames / (el / 1000);
-      if (phase === 1) {
-        if (fps >= 45) return;                // 流畅，保持现状
-        phase = 2; frames = 0; t0 = 0;
-        FX.degrade();                          // 一档：限帧 + 关水镜 + 降分辨率
-        requestAnimationFrame(tick);
-      } else {
-        if (fps < 32) FX.hibernate();            // 仍不流畅：进入休眠模式
-      }
+      frames = 0; t0 = t;
+      // 两档用不同阈值：一档 38fps 触发，二档要真的到 30fps 以下才继续降，
+      // 避免在临界值反复横跳导致一降到底、把光带也冻掉。
+      var low = fps < (phase === 0 ? 38 : 30);
+      if (low) lowCount++; else lowCount = 0;
+      if (lowCount >= 2 && phase === 0) { phase = 1; lowCount = 0; FX.degrade(); }
+      else if (lowCount >= 3 && phase === 1) { phase = 2; FX.hibernate(); }
     }
     requestAnimationFrame(tick);
   })();

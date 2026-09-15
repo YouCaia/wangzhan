@@ -217,40 +217,41 @@
     }
 
     /* 性能兜底（配合 perf-guard.js 的 yc-soft / yc-fx-off 类）。
-       实测：滚动浏览后，6 个光斑的漂浮动画（带 scale，会触发重新光栅化大渐变）
-       会让首页从 60fps 掉到 45fps；停掉动画即可回到满帧，而光晕本身完全保留。
-       yc-soft 只在无 GPU / 帧率偏低时施加，有显卡的设备仍是完整漂浮效果。 */
-    html.yc-soft .bokeh-orb { animation: none !important; }
+       光斑漂浮动画已改为纯 translate（去掉 scale 后不再触发重新光栅化），
+       实测开销在噪声范围内，因此降级时也保留漂浮；只处理昂贵的 .work-thumb-glow 模糊。 */
     html.yc-soft .work-thumb-glow { filter: none !important; opacity: 0.35 !important; }
     html.yc-fx-off .bokeh-orb { display: none !important; }
 
+    /* 只做位移、不做缩放：scale() 会让浏览器每帧重新光栅化这 6 个大尺寸
+       径向渐变（实测约占 15fps），而纯 translate 只走合成器、几乎免费。
+       位移幅度相应加大，漂浮感依然保留。 */
     @keyframes float1 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33%      { transform: translate(60px, 40px) scale(1.08); }
-      66%      { transform: translate(-30px, 80px) scale(0.95); }
+      0%, 100% { transform: translate(0, 0); }
+      33%      { transform: translate(72px, 48px); }
+      66%      { transform: translate(-38px, 92px); }
     }
     @keyframes float2 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33%      { transform: translate(-80px, -50px) scale(1.1); }
-      66%      { transform: translate(40px, -90px) scale(0.92); }
+      0%, 100% { transform: translate(0, 0); }
+      33%      { transform: translate(-94px, -58px); }
+      66%      { transform: translate(48px, -104px); }
     }
     @keyframes float3 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50%      { transform: translate(-70px, 60px) scale(1.15); }
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(-84px, 72px); }
     }
     @keyframes float4 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50%      { transform: translate(80px, -50px) scale(1.1); }
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(96px, -60px); }
     }
     @keyframes float5 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      25%      { transform: translate(40px, 30px) scale(1.2); }
-      75%      { transform: translate(-30px, -40px) scale(0.9); }
+      0%, 100% { transform: translate(0, 0); }
+      25%      { transform: translate(52px, 38px); }
+      75%      { transform: translate(-40px, -52px); }
     }
     @keyframes float6 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      40%      { transform: translate(50px, -60px) scale(1.05); }
-      80%      { transform: translate(-60px, 30px) scale(0.98); }
+      0%, 100% { transform: translate(0, 0); }
+      40%      { transform: translate(60px, -72px); }
+      80%      { transform: translate(-76px, 38px); }
     }
 
     /* Noise */

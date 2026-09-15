@@ -39,7 +39,9 @@
   // 因此软件渲染（无 GPU）下可以大胆砍到 420，像素量只有 1280 的约 1/9。
   var MAX_DIM = (FX && FX.noGpu) ? 420 : (TIER === 'low' ? 720 : (TIER === 'mid' ? 1024 : 1280));
   var DPR_CAP = TIER === 'low' ? 1 : (TIER === 'mid' ? 1.25 : 1.5);
-  var MIN_DT = TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60);
+  // 光带本身流动极慢（cfg.speed = 0.2），10fps 与 60fps 观感几乎一致，
+  // 但渲染开销只有 1/6 —— 用降帧而不是关停来换取低配设备的流畅度。
+  var MIN_DT = FX ? (1000 / FX.bendsFps) : (TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60));
 
   var canvas = document.createElement('canvas');
   canvas.id = 'color-bends';
@@ -348,9 +350,9 @@
 
   // 与 water-bg.js 联动：实测帧率过低时同步降分辨率 + 限帧
   window.addEventListener('yc:perf-downgrade', function () {
-    MAX_DIM = 420;
+    MAX_DIM = 320;
     DPR_CAP = 1;
-    MIN_DT = 1000 / 30;
+    MIN_DT = 1000 / 8;      // 继续降帧而非关停：光带仍在缓慢流动，亮度与氛围保留
     resize();
   });
 
