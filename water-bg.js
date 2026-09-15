@@ -20,13 +20,8 @@
   if (reduce || !fine) return; // 减少动效 / 触屏设备：不启用
 
   /* ------------------------------------------------------------
-   * 性能分级（低配设备自动降级，避免卡顿）
-   *   水面 = 全屏 canvas 每帧重绘 + 全屏 screen 混合
-   *   水镜 = backdrop-filter 位移滤镜（GPU 开销最大）
-   * 依据 CPU 核心数 / 设备内存 / 屏幕物理像素宽度判定三档：
-   *   high —— 原效果（60fps，dpr≤2，完整环境水流）
-   *   mid  —— 45fps，dpr≤1.5，环境水流减半，噪声动画冻结
-   *   low  —— 30fps，dpr=1，环境水流稀疏，关闭水镜（最吃 GPU 的一项）
+   * 性能分级：优先采用 perf-guard.js 的统一判定（含软件渲染识别），
+   * 若守卫未加载则退回本文件自测，保证单独引入时也能工作。
    * ---------------------------------------------------------- */
   var TIER = (function () {
     var cores = navigator.hardwareConcurrency || 4;
@@ -36,8 +31,14 @@
     if (cores <= 8 || mem <= 8 || px > 2600) return 'mid';
     return 'high';
   })();
-  var DPR_CAP = TIER === 'low' ? 1 : (TIER === 'mid' ? 1.5 : 2);
-  var MIN_DT = TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60);
+
+  var FX = window.__ycFX || null;
+  if (FX) {
+    TIER = FX.tier;
+    if (!FX.water) return;                              // 守卫判定不启用（软件渲染 / ?fx=off）
+  }
+  var DPR_CAP = FX && FX.noGpu ? 1 : (TIER === 'low' ? 1 : (TIER === 'mid' ? 1.5 : 2));
+  var MIN_DT = FX ? (1000 / FX.waterFps) : (TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60));
 
   var body = document.body || document.documentElement;
 
@@ -55,6 +56,8 @@
   st.pointerEvents = 'none';
   st.opacity = '0.4';
   st.mixBlendMode = 'screen';
+  // 软件渲染下全屏 screen 混合要逐像素算，改成普通叠加并略降不透明度
+  if (FX && FX.noGpu) { st.mixBlendMode = 'normal'; st.opacity = '0.28'; }
   body.appendChild(canvas);
 
   var ctx = canvas.getContext('2d');
@@ -101,6 +104,7 @@
 
   // 在屏幕坐标处注入扰动（负高度 = 凹陷 → 涟漪）。r 越大涟漪越宽、越不「硬」
   function disturb(cx, cy, power, r) {
+    lastActivity = performance.now();
     r = r || 12;
     var gx = Math.floor(cx / window.innerWidth * SIM_W);
     var gy = Math.floor(cy / window.innerHeight * SIM_H);
@@ -200,8 +204,8 @@
   svg.appendChild(filter);
   body.appendChild(svg);
 
-  // 低配设备直接不建水镜：backdrop-filter 是全站最重的一项 GPU 开销
-  var LENS_ON = TIER !== 'low';
+  // 低配设备 / 软件渲染下不建水镜：backdrop-filter 是全站最重的一项 GPU 开销
+  var LENS_ON = FX ? !!FX.lens : (TIER !== 'low');
   var lens = LENS_ON ? document.createElement('div') : null;
   if (LENS_ON) {
   lens.id = 'water-lens';
@@ -240,6 +244,8 @@
 
     // (a) 背景涟漪：速度越快越强
     disturb(cx, cy, 0.6 + sp * 0.05, 12);
+    // 休眠模式下指针一动就唤醒循环（涟漪照常出现，静止时才停）
+    if (HIBERNATE && !running && !dead) start();
 
     // (b) 水镜：随光标移动，速度驱动扭曲强度
     if (LENS_ON) {
@@ -284,10 +290,19 @@
   }
 
   var raf = 0, lensRaf = 0, running = false;
+  var lastActivity = 0;          // 最近一次注入扰动的时刻
+  var HIBERNATE = false;         // 休眠模式：静止时完全停止重绘
+  var SETTLE_MS = 2500;          // 涟漪平复所需的静置时间
 
   function frame(t) {
     raf = requestAnimationFrame(frame);
-    if (t - lastT >= MIN_DT) { step(); ambient(); lastT = t; }
+    if (t - lastT >= MIN_DT) {
+      step();
+      if (!HIBERNATE) ambient();
+      lastT = t;
+      // 休眠模式下：扰动平复且无新交互 → 彻底停掉循环（静止时零开销）
+      if (HIBERNATE && performance.now() - lastActivity > SETTLE_MS) stop();
+    }
   }
 
   function start() {
@@ -305,17 +320,17 @@
 
   // 切到后台/最小化时彻底停掉，不占用 CPU 与 GPU
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) stop(); else start();
+    if (document.hidden) stop(); else if (!dead) start();
   });
 
   /* ------------------------------------------------------------
-   * 运行时自适应：实测帧率
-   * 硬件参数（核心数/内存）并非总是可靠（核显、老驱动、远程桌面等），
-   * 因此开机后实测 3 秒平均帧率，低于 45fps 就自动降档：
-   *   - 水面降到 30fps
-   *   - 关闭水镜（最重的一项）
-   *   - 广播 yc:perf-downgrade，让 color-bends 同步降分辨率
+   * 与 perf-guard 联动的两级降级
+   *   yc:fx-degrade —— 限帧 + 关水镜（由守卫实测帧率触发）
+   *   yc:fx-off     —— 彻底停止并移除 canvas / 水镜
+   * 守卫未加载时（本文件单独引入）保留自身看门狗兜底。
    * ---------------------------------------------------------- */
+  var dead = false;
+
   function degrade() {
     MIN_DT = 1000 / 30;
     FLOW_EVERY = 12;
@@ -324,7 +339,28 @@
     try { window.dispatchEvent(new CustomEvent('yc:perf-downgrade')); } catch (e) {}
   }
 
-  if (TIER !== 'low') {
+  function kill() {
+    if (dead) return;
+    dead = true;
+    stop();
+    LENS_ON = false;
+    if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+    if (lens && lens.parentNode) lens.parentNode.removeChild(lens);
+    if (svg && svg.parentNode) svg.parentNode.removeChild(svg);
+  }
+
+  window.addEventListener('yc:fx-degrade', degrade);
+  window.addEventListener('yc:fx-off', kill);
+
+  // 休眠模式：关水镜、降到 24fps、关闭环境水流，静止时循环自动停止
+  window.addEventListener('yc:fx-hibernate', function () {
+    HIBERNATE = true;
+    MIN_DT = 1000 / 24;
+    FLOW_EVERY = 999999;                 // 环境水流关闭（ambient 也不再调用）
+    if (LENS_ON && lens) { LENS_ON = false; lens.style.display = 'none'; }
+  });
+
+  if (!FX && TIER !== 'low') {
     (function watchFps() {
       var frames = 0, t0 = 0, done = false;
       function tick(t) {

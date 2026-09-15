@@ -135,15 +135,28 @@
 
     // 入场动画：模糊→清晰 + 从底部上浮 + 交错淡入
     if (gsap) {
+      // blur(10px) 同时作用于 20+ 个元素，在软件渲染（远程桌面/无显卡）下极慢，
+      // 因此由 perf-guard 判定是否启用模糊；降级时只保留位移 + 淡入，观感差别很小。
+      var FX = window.__ycFX;
+      var allowBlur = !FX || (FX.water && !FX.noGpu && !FX.killed);
       var els = listEl._masonryItems.map(function (it) { return it.el; });
-      gsap.set(els, { opacity: 0, y: 90, filter: 'blur(10px)' });
-      gsap.to(els, {
+      gsap.set(els, allowBlur
+        ? { opacity: 0, y: 90, filter: 'blur(10px)' }
+        : { opacity: 0, y: 40 });
+      gsap.to(els, allowBlur ? {
         opacity: 1,
         y: 0,
         filter: 'blur(0px)',
         duration: 0.7,
         ease: 'power3.out',
         stagger: 0.045,
+        overwrite: 'auto'
+      } : {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
+        ease: 'power2.out',
+        stagger: 0.03,
         overwrite: 'auto'
       });
     }

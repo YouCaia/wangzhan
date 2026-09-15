@@ -22,8 +22,12 @@
   var fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
   if (reduce || !fine) return; // 减少动效 / 触屏：不启用
 
-  // 性能分级：与 water-bg.js 同一套判定逻辑
+  // 性能分级：优先采用 perf-guard.js 的统一判定（含软件渲染识别）
+  var FX = window.__ycFX || null;
+  if (FX && !FX.bends) return;   // 软件渲染 / ?fx=off：WebGL 光带必须不启动
+
   var TIER = (function () {
+    if (FX) return FX.tier;
     var cores = navigator.hardwareConcurrency || 4;
     var mem = navigator.deviceMemory || 4;
     var px = window.innerWidth * (window.devicePixelRatio || 1);
@@ -348,6 +352,14 @@
     MIN_DT = 1000 / 30;
     resize();
   });
+
+  // 全停 / 休眠：移除 canvas 并结束循环（WebGL 光带无法"静止"，只能整体关闭）
+  function destroy() {
+    stopLoop();
+    if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+  }
+  window.addEventListener('yc:fx-off', destroy);
+  window.addEventListener('yc:fx-hibernate', destroy);
 
   startLoop();
 })();
