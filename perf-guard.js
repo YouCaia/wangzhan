@@ -85,6 +85,7 @@
 
   FX.degrade = function () {
     if (FX.killed) return;
+    docEl.classList.add('yc-soft');
     emit('yc:fx-degrade');
   };
   // 休眠降级：光带（WebGL）关闭，水波改为「静止时不重绘、只有指针划过才起涟漪」，
@@ -93,6 +94,7 @@
     if (FX.killed || FX.hibernateDone) return;
     FX.hibernateDone = true;
     FX.bends = false; FX.lens = false;
+    docEl.classList.add('yc-soft');
     docEl.classList.add('yc-no-blur');
     emit('yc:fx-hibernate');
     try { console.info('[perf-guard] 帧率偏低，已进入省电模式：关闭光带与毛玻璃，水波仅在你移动鼠标时响应'); } catch (e) {}
@@ -111,11 +113,12 @@
   // 背景每帧变化会让这些模糊图层每帧重算，这是低配/远程桌面下最主要的开销。
   // 但 ?fx=on（用户强制开启）时不做任何降级。
   if (forced === false) {
+    docEl.classList.add('yc-soft');
     docEl.classList.add('yc-no-blur');
     docEl.classList.add('yc-fx-off');
   } else if (forced !== true) {
-    if (noGpu) docEl.classList.add('yc-no-blur');
-    if (!FX.water) { docEl.classList.add('yc-no-blur'); docEl.classList.add('yc-fx-off'); }
+    if (noGpu) { docEl.classList.add('yc-soft'); docEl.classList.add('yc-no-blur'); }
+    if (!FX.water) { docEl.classList.add('yc-soft'); docEl.classList.add('yc-no-blur'); docEl.classList.add('yc-fx-off'); }
   }
 
   /* ---------- 3) 注入降级样式 ---------- */

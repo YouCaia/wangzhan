@@ -35,8 +35,9 @@
     if (cores <= 8 || mem <= 8 || px > 2600) return 'mid';
     return 'high';
   })();
-  // 内部分辨率上限：low 档砍到 720（像素量约为 1280 的 1/3），这是最直接的减负手段
-  var MAX_DIM = TIER === 'low' ? 720 : (TIER === 'mid' ? 1024 : 1280);
+  // 内部分辨率上限：光带是极度模糊的渐变，低分辨率再用 CSS 拉伸铺满肉眼无损，
+  // 因此软件渲染（无 GPU）下可以大胆砍到 420，像素量只有 1280 的约 1/9。
+  var MAX_DIM = (FX && FX.noGpu) ? 420 : (TIER === 'low' ? 720 : (TIER === 'mid' ? 1024 : 1280));
   var DPR_CAP = TIER === 'low' ? 1 : (TIER === 'mid' ? 1.25 : 1.5);
   var MIN_DT = TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60);
 
@@ -347,19 +348,23 @@
 
   // 与 water-bg.js 联动：实测帧率过低时同步降分辨率 + 限帧
   window.addEventListener('yc:perf-downgrade', function () {
-    MAX_DIM = 720;
+    MAX_DIM = 420;
     DPR_CAP = 1;
     MIN_DT = 1000 / 30;
     resize();
   });
 
-  // 全停 / 休眠：移除 canvas 并结束循环（WebGL 光带无法"静止"，只能整体关闭）
+  // yc:fx-off  —— 彻底移除（?fx=off 手动全关时用）
+  // yc:fx-hibernate —— 冻结：只停止渲染循环，保留最后一帧画面。
+  //   光带是缓慢流动的金色渐变，冻成一帧后仍是完整的背景氛围，且完全不耗性能，
+  //   比直接删掉 canvas（变成纯色底）观感好得多。
+  function freeze() { stopLoop(); }
   function destroy() {
     stopLoop();
     if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
   }
   window.addEventListener('yc:fx-off', destroy);
-  window.addEventListener('yc:fx-hibernate', destroy);
+  window.addEventListener('yc:fx-hibernate', freeze);
 
   startLoop();
 })();

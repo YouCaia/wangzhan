@@ -39,6 +39,9 @@
   }
   var DPR_CAP = FX && FX.noGpu ? 1 : (TIER === 'low' ? 1 : (TIER === 'mid' ? 1.5 : 2));
   var MIN_DT = FX ? (1000 / FX.waterFps) : (TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60));
+  // 输出缩放：无 GPU 时按 55% 渲染再用 CSS 拉伸铺满。
+  // 水波本身是柔和模糊的，缩放后肉眼分辨不出，但填充像素量降到约 1/3。
+  var OUT_SCALE = FX && FX.noGpu ? 0.55 : 1;
 
   var body = document.body || document.documentElement;
 
@@ -94,7 +97,7 @@
 
   function resize() {
     // dpr 封顶：4K/2x 屏上全屏重绘的像素量是 1x 的 4 倍，是掉帧主因之一
-    var dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+    var dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP) * OUT_SCALE;
     canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
     canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
     ctx.imageSmoothingEnabled = true;
@@ -352,13 +355,19 @@
   window.addEventListener('yc:fx-degrade', degrade);
   window.addEventListener('yc:fx-off', kill);
 
-  // 休眠模式：关水镜、降到 24fps、关闭环境水流，静止时循环自动停止
-  window.addEventListener('yc:fx-hibernate', function () {
+  // 休眠模式：关水镜、降到 24fps、关闭环境水流、输出再降一档，静止时循环自动停止
+  function enterHibernate() {
     HIBERNATE = true;
     MIN_DT = 1000 / 24;
     FLOW_EVERY = 999999;                 // 环境水流关闭（ambient 也不再调用）
+    OUT_SCALE = Math.min(OUT_SCALE, 0.5); resize();
     if (LENS_ON && lens) { LENS_ON = false; lens.style.display = 'none'; }
-  });
+  }
+  window.addEventListener('yc:fx-hibernate', enterHibernate);
+
+  // 软件渲染（远程桌面 / 无显卡）下直接进休眠：
+  // 静止时完全不重绘（零开销），指针移动时照常起涟漪 —— 交互保留，持续开销归零
+  if (FX && FX.noGpu) enterHibernate();
 
   if (!FX && TIER !== 'low') {
     (function watchFps() {

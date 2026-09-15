@@ -32,11 +32,40 @@
       position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
     }
     .bokeh-orb {
-      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12;
+      /* 同 index.html：去掉 filter: blur(80px)，改用多段柔和渐变达到同样光晕，
+         避免软件渲染环境下持续的大半径模糊开销 */
+      position: absolute; border-radius: 50%; opacity: 0.12;
     }
-    .orb-1 { width: 500px; height: 500px; background: #d4a857; top: -10%; right: -5%; }
-    .orb-2 { width: 400px; height: 400px; background: #c98a3b; bottom: 10%; left: -8%; }
-    .orb-3 { width: 300px; height: 300px; background: #f0d089; top: 40%; left: 50%; opacity: 0.06; }
+    .orb-1 {
+      width: 500px; height: 500px; top: -10%; right: -5%;
+      background: radial-gradient(circle,
+          rgba(212,168,87,.85) 0%,
+          rgba(212,168,87,.45) 28%,
+          rgba(212,168,87,.16) 52%,
+          rgba(212,168,87,.04) 72%,
+          rgba(212,168,87,0) 86%);
+    }
+    .orb-2 {
+      width: 400px; height: 400px; bottom: 10%; left: -8%;
+      background: radial-gradient(circle,
+          rgba(201,138,59,.85) 0%,
+          rgba(201,138,59,.45) 28%,
+          rgba(201,138,59,.16) 52%,
+          rgba(201,138,59,.04) 72%,
+          rgba(201,138,59,0) 86%);
+    }
+    .orb-3 {
+      width: 300px; height: 300px; top: 40%; left: 50%; opacity: 0.06;
+      background: radial-gradient(circle,
+          rgba(240,208,137,.85) 0%,
+          rgba(240,208,137,.45) 28%,
+          rgba(240,208,137,.16) 52%,
+          rgba(240,208,137,.04) 72%,
+          rgba(240,208,137,0) 86%);
+    }
+    /* 性能兜底（配合 perf-guard.js 的 yc-fx-off 类） */
+    html.yc-fx-off .bokeh-orb { display: none !important; }
+
     .vignette {
       position: fixed; inset: 0; z-index: 1; pointer-events: none;
       background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);

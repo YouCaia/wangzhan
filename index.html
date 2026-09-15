@@ -138,50 +138,91 @@
     .bokeh-orb {
       position: absolute;
       border-radius: 50%;
-      filter: blur(80px);
+      /* 说明：原先这里用 filter: blur(80px) 来柔化边缘，但实测在无 GPU / 软件渲染
+         环境下，6 个大尺寸 blur 会让首页从 60fps 掉到 15fps（即使静止不动也一样）。
+         而 radial-gradient 本身就没有硬边，改用「多段柔和渐变」可达到几乎相同的
+         光晕观感，且完全不经过滤镜通道 —— 60fps 满帧。 */
       opacity: 0.5;
       will-change: transform;
     }
     .orb-1 {
       width: 500px; height: 500px;
-      background: radial-gradient(circle, #e8b864 0%, #c98a3b 40%, transparent 70%);
+      background: radial-gradient(circle,
+          rgba(232,184,100,.80) 0%,
+          rgba(216,158,74,.50) 24%,
+          rgba(201,138,59,.24) 46%,
+          rgba(201,138,59,.08) 66%,
+          rgba(201,138,59,0) 84%);
       top: -120px; left: -100px;
       animation: float1 18s ease-in-out infinite;
     }
     .orb-2 {
       width: 600px; height: 600px;
-      background: radial-gradient(circle, #d4a857 0%, #a8823a 45%, transparent 70%);
+      background: radial-gradient(circle,
+          rgba(212,168,87,.78) 0%,
+          rgba(190,146,68,.48) 26%,
+          rgba(168,130,58,.23) 48%,
+          rgba(168,130,58,.08) 68%,
+          rgba(168,130,58,0) 85%);
       bottom: -180px; right: -150px;
       animation: float2 22s ease-in-out infinite;
     }
     .orb-3 {
       width: 350px; height: 350px;
-      background: radial-gradient(circle, #f0d089 0%, #d4a857 35%, transparent 65%);
+      background: radial-gradient(circle,
+          rgba(240,208,137,.75) 0%,
+          rgba(224,186,110,.46) 26%,
+          rgba(212,168,87,.22) 48%,
+          rgba(212,168,87,.07) 68%,
+          rgba(212,168,87,0) 85%);
       top: 30%; right: 20%;
       animation: float3 16s ease-in-out infinite;
       opacity: 0.35;
     }
     .orb-4 {
       width: 280px; height: 280px;
-      background: radial-gradient(circle, #e8b864 0%, #c98a3b 40%, transparent 70%);
+      background: radial-gradient(circle,
+          rgba(232,184,100,.78) 0%,
+          rgba(214,158,74,.48) 26%,
+          rgba(201,138,59,.22) 48%,
+          rgba(201,138,59,.07) 68%,
+          rgba(201,138,59,0) 85%);
       bottom: 25%; left: 15%;
       animation: float4 20s ease-in-out infinite;
       opacity: 0.4;
     }
     .orb-5 {
       width: 200px; height: 200px;
-      background: radial-gradient(circle, #f5dca0 0%, #e8b864 50%, transparent 75%);
+      background: radial-gradient(circle,
+          rgba(245,220,160,.72) 0%,
+          rgba(236,199,127,.44) 28%,
+          rgba(232,184,100,.20) 50%,
+          rgba(232,184,100,.06) 70%,
+          rgba(232,184,100,0) 86%);
       top: 15%; left: 45%;
       animation: float5 14s ease-in-out infinite;
       opacity: 0.3;
     }
     .orb-6 {
       width: 420px; height: 420px;
-      background: radial-gradient(circle, #c98a3b 0%, #8b5e2a 40%, transparent 70%);
+      background: radial-gradient(circle,
+          rgba(201,138,59,.76) 0%,
+          rgba(176,116,50,.46) 26%,
+          rgba(139,94,42,.22) 48%,
+          rgba(139,94,42,.07) 68%,
+          rgba(139,94,42,0) 85%);
       bottom: -80px; left: 35%;
       animation: float6 24s ease-in-out infinite;
       opacity: 0.35;
     }
+
+    /* 性能兜底（配合 perf-guard.js 的 yc-soft / yc-fx-off 类）。
+       实测：滚动浏览后，6 个光斑的漂浮动画（带 scale，会触发重新光栅化大渐变）
+       会让首页从 60fps 掉到 45fps；停掉动画即可回到满帧，而光晕本身完全保留。
+       yc-soft 只在无 GPU / 帧率偏低时施加，有显卡的设备仍是完整漂浮效果。 */
+    html.yc-soft .bokeh-orb { animation: none !important; }
+    html.yc-soft .work-thumb-glow { filter: none !important; opacity: 0.35 !important; }
+    html.yc-fx-off .bokeh-orb { display: none !important; }
 
     @keyframes float1 {
       0%, 100% { transform: translate(0, 0) scale(1); }
