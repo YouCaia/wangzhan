@@ -22,6 +22,8 @@
   height: 100%;
   background-size: cover;
   background-position: center center;
+  /* 懒加载未完成时的一层极淡占位，避免出现「空洞」 */
+  background-color: rgba(255, 255, 255, 0.035);
   border-radius: 12px;
   box-shadow: 0 12px 40px -14px rgba(0, 0, 0, 0.55);
   /* 默认黑白，悬停变回彩色 */

@@ -61,6 +61,45 @@
     listEl.style.height = total + 'px';
   }
 
+  // ============ 背景图懒加载 ============
+  // 背景图无法用原生 loading=lazy，改用 IntersectionObserver：
+  // 只解码进入视口（提前预取）的图片，其余等滚动到再加载。
+  var lazyObserver = null;
+
+  function loadBg(el) {
+    var src = el.getAttribute('data-bg');
+    if (!src) return;
+    el.removeAttribute('data-bg');
+    var probe = new Image();
+    probe.onload = function () {
+      el.style.backgroundImage = 'url("' + src + '")';
+      el.style.opacity = '1';
+    };
+    probe.onerror = function () { el.style.opacity = '1'; };
+    probe.src = src;
+  }
+
+  function setupLazyBg(listEl) {
+    var nodes = listEl.querySelectorAll('.masonry-item-img[data-bg]');
+    if (!nodes.length) return;
+    // 浏览器不支持 IntersectionObserver 时全部直接加载，保证功能完整
+    if (!('IntersectionObserver' in window)) {
+      Array.prototype.forEach.call(nodes, loadBg);
+      return;
+    }
+    if (!lazyObserver) {
+      lazyObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            loadBg(e.target);
+            lazyObserver.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '600px 0px' });
+    }
+    Array.prototype.forEach.call(nodes, function (n) { lazyObserver.observe(n); });
+  }
+
   function buildMasonry(listEl, items, onItemClick) {
     if (!listEl) return;
     listEl.innerHTML = '';
@@ -72,7 +111,14 @@
       wrap.setAttribute('data-key', it.id);
       var img = document.createElement('div');
       img.className = 'masonry-item-img';
-      if (it.img) img.style.backgroundImage = 'url("' + it.img + '")';
+      // 懒加载：先存 data-bg，进入视口时才真正加载背景图
+      // 目的：避免首页一次性解码几十张大图（单张约 6.5MB 解码内存）导致低配设备卡顿
+      if (it.img) {
+        img.setAttribute('data-bg', it.img);
+        img.style.opacity = '0';
+        // 注意：必须保留 CSS 里的 filter 过渡（黑白→彩色悬停），不能只写 opacity
+        img.style.transition = 'opacity .5s ease, filter .55s ease';
+      }
       wrap.appendChild(img);
       wrap.addEventListener('click', function () {
         if (onItemClick) onItemClick(it.workKey);
@@ -83,6 +129,9 @@
 
     // 布局（同步，确保入场动画前位置已就绪）
     layout(listEl);
+
+    // 启动背景图懒加载（必须在布局完成后，元素才有真实的高度/位置）
+    setupLazyBg(listEl);
 
     // 入场动画：模糊→清晰 + 从底部上浮 + 交错淡入
     if (gsap) {

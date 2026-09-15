@@ -3042,6 +3042,7 @@ window.__EDIT_OVERRIDES__ = {
           el.src = src;
           el.alt = alt || '';
           el.loading = 'lazy';
+          el.decoding = 'async';
         }
         el.onerror = function() { el.style.display = 'none'; };
         return el;
@@ -3347,7 +3348,7 @@ window.__EDIT_OVERRIDES__ = {
                 '<div class="work-thumb">' +
                   '<div class="work-thumb-bg"></div>' +
                   '<div class="work-thumb-glow"></div>' +
-                  '<img class="work-thumb-img" src="' + it.img + '" alt="' + escapeHtml(d.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' +
+                  '<img class="work-thumb-img" src="' + it.img + '" alt="' + escapeHtml(d.title) + '" loading="lazy" decoding="async" onerror="this.style.display=\'none\'">' +
                   '<span class="work-cat">' + escapeHtml(d.category || '') + '</span>' +
                   '<span class="work-hover-text">浏览作品 →</span>' +
                 '</div>' +

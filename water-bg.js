@@ -19,6 +19,26 @@
   var fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
   if (reduce || !fine) return; // 减少动效 / 触屏设备：不启用
 
+  /* ------------------------------------------------------------
+   * 性能分级（低配设备自动降级，避免卡顿）
+   *   水面 = 全屏 canvas 每帧重绘 + 全屏 screen 混合
+   *   水镜 = backdrop-filter 位移滤镜（GPU 开销最大）
+   * 依据 CPU 核心数 / 设备内存 / 屏幕物理像素宽度判定三档：
+   *   high —— 原效果（60fps，dpr≤2，完整环境水流）
+   *   mid  —— 45fps，dpr≤1.5，环境水流减半，噪声动画冻结
+   *   low  —— 30fps，dpr=1，环境水流稀疏，关闭水镜（最吃 GPU 的一项）
+   * ---------------------------------------------------------- */
+  var TIER = (function () {
+    var cores = navigator.hardwareConcurrency || 4;
+    var mem = navigator.deviceMemory || 4;              // Device Memory API，单位 GiB
+    var px = window.innerWidth * (window.devicePixelRatio || 1);
+    if (cores <= 4 || mem <= 4) return 'low';
+    if (cores <= 8 || mem <= 8 || px > 2600) return 'mid';
+    return 'high';
+  })();
+  var DPR_CAP = TIER === 'low' ? 1 : (TIER === 'mid' ? 1.5 : 2);
+  var MIN_DT = TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60);
+
   var body = document.body || document.documentElement;
 
   /* ============================================================
@@ -70,9 +90,11 @@
   var lastT = 0;
 
   function resize() {
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // dpr 封顶：4K/2x 屏上全屏重绘的像素量是 1x 的 4 倍，是掉帧主因之一
+    var dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
     canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
     canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
+    ctx.imageSmoothingEnabled = true;
   }
   resize();
   window.addEventListener('resize', resize);
@@ -154,12 +176,16 @@
   turb.setAttribute('seed', '11');
   turb.setAttribute('result', 'noise');
   // 让噪声随时间缓慢流动 → 静止时也像活水
-  var anim = document.createElementNS(svgNS, 'animate');
-  anim.setAttribute('attributeName', 'baseFrequency');
-  anim.setAttribute('dur', '18s');
-  anim.setAttribute('values', '0.011 0.016; 0.014 0.012; 0.009 0.018; 0.011 0.016');
-  anim.setAttribute('repeatCount', 'indefinite');
-  turb.appendChild(anim);
+  // 注：动画中的 feTurbulence 需要每帧重算噪声，GPU 开销显著；
+  //     中/低配设备冻结为静态噪声（视觉差异极小，省下持续重算）
+  if (TIER === 'high') {
+    var anim = document.createElementNS(svgNS, 'animate');
+    anim.setAttribute('attributeName', 'baseFrequency');
+    anim.setAttribute('dur', '18s');
+    anim.setAttribute('values', '0.011 0.016; 0.014 0.012; 0.009 0.018; 0.011 0.016');
+    anim.setAttribute('repeatCount', 'indefinite');
+    turb.appendChild(anim);
+  }
 
   var disp = document.createElementNS(svgNS, 'feDisplacementMap');
   disp.setAttribute('id', 'waterDisp');
@@ -174,7 +200,10 @@
   svg.appendChild(filter);
   body.appendChild(svg);
 
-  var lens = document.createElement('div');
+  // 低配设备直接不建水镜：backdrop-filter 是全站最重的一项 GPU 开销
+  var LENS_ON = TIER !== 'low';
+  var lens = LENS_ON ? document.createElement('div') : null;
+  if (LENS_ON) {
   lens.id = 'water-lens';
   lens.setAttribute('aria-hidden', 'true');
   var ls = lens.style;
@@ -193,6 +222,7 @@
   ls.maskImage = maskCss;
   ls.webkitMaskImage = maskCss;
   body.appendChild(lens);
+  }
 
   /* ============================================================
    * 3) 交互：光标推动水面 + 驱动水镜
@@ -212,30 +242,37 @@
     disturb(cx, cy, 0.6 + sp * 0.05, 12);
 
     // (b) 水镜：随光标移动，速度驱动扭曲强度
-    target = Math.min(8 + sp * 0.55, 30);
-    lx = cx; ly = cy;
-    lens.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) translate(-50%,-50%)';
-    lastMove = performance.now();
+    if (LENS_ON) {
+      target = Math.min(8 + sp * 0.55, 30);
+      lx = cx; ly = cy;
+      lens.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) translate(-50%,-50%)';
+      lastMove = performance.now();
+    }
 
     lastX = cx; lastY = cy;
   }, { passive: true });
 
+  // 环境水流的触发频率按档位降低（low 档让水面更快归于平静，减少持续扰动）
+  var FLOW_EVERY = TIER === 'low' ? 15 : (TIER === 'mid' ? 8 : 5);
+  var RIPPLE_EVERY = TIER === 'low' ? 110 : (TIER === 'mid' ? 70 : 40);
+
   function ambient() {
     ambientTick++;
     // 缓慢游走的环境水流（像有风），避免静止时像死水、也去除「僵硬感」
-    if (ambientTick % 5 === 0) {
+    if (ambientTick % FLOW_EVERY === 0) {
       flowT += 0.02;
       var fx = (Math.sin(flowT * 0.7) * 0.5 + 0.5) * window.innerWidth;
       var fy = (Math.cos(flowT * 0.5) * 0.5 + 0.5) * window.innerHeight;
       disturb(fx, fy, 0.22, 14);
     }
     // 偶发极轻的随机微漾
-    if (ambientTick % 40 === 0) {
+    if (ambientTick % RIPPLE_EVERY === 0) {
       disturb(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 0.18, 10);
     }
   }
 
   function lensFrame() {
+    if (!LENS_ON) return;
     // 停下超过 120ms → 目标强度衰减，水镜平复、淡出
     if (performance.now() - lastMove > 120) target *= 0.86;
     if (target < 0.3) target = 0;
@@ -243,13 +280,65 @@
     if (scale < 0.3) scale = 0;
     disp.setAttribute('scale', scale.toFixed(2));
     lens.style.opacity = (scale > 1 ? Math.min(1, scale / 9) : 0).toFixed(3);
-    requestAnimationFrame(lensFrame);
+    lensRaf = requestAnimationFrame(lensFrame);
   }
 
+  var raf = 0, lensRaf = 0, running = false;
+
   function frame(t) {
-    if (t - lastT >= 1000 / 60) { step(); ambient(); lastT = t; }
-    requestAnimationFrame(frame);
+    raf = requestAnimationFrame(frame);
+    if (t - lastT >= MIN_DT) { step(); ambient(); lastT = t; }
   }
-  requestAnimationFrame(frame);
-  requestAnimationFrame(lensFrame);
+
+  function start() {
+    if (running) return;
+    running = true;
+    lastT = 0;
+    raf = requestAnimationFrame(frame);
+    if (LENS_ON) lensRaf = requestAnimationFrame(lensFrame);
+  }
+  function stop() {
+    running = false;
+    cancelAnimationFrame(raf);
+    cancelAnimationFrame(lensRaf);
+  }
+
+  // 切到后台/最小化时彻底停掉，不占用 CPU 与 GPU
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stop(); else start();
+  });
+
+  /* ------------------------------------------------------------
+   * 运行时自适应：实测帧率
+   * 硬件参数（核心数/内存）并非总是可靠（核显、老驱动、远程桌面等），
+   * 因此开机后实测 3 秒平均帧率，低于 45fps 就自动降档：
+   *   - 水面降到 30fps
+   *   - 关闭水镜（最重的一项）
+   *   - 广播 yc:perf-downgrade，让 color-bends 同步降分辨率
+   * ---------------------------------------------------------- */
+  function degrade() {
+    MIN_DT = 1000 / 30;
+    FLOW_EVERY = 12;
+    RIPPLE_EVERY = 100;
+    if (LENS_ON && lens) { LENS_ON = false; lens.style.display = 'none'; }
+    try { window.dispatchEvent(new CustomEvent('yc:perf-downgrade')); } catch (e) {}
+  }
+
+  if (TIER !== 'low') {
+    (function watchFps() {
+      var frames = 0, t0 = 0, done = false;
+      function tick(t) {
+        if (done) return;
+        if (!t0) { t0 = t; requestAnimationFrame(tick); return; }
+        frames++;
+        var el = t - t0;
+        if (el < 3000) { requestAnimationFrame(tick); return; }
+        done = true;
+        if (frames / (el / 1000) < 45) degrade();
+      }
+      requestAnimationFrame(tick);
+    })();
+  }
+
+  start();
 })();

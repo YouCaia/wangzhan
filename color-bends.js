@@ -8,6 +8,8 @@
  *  - 鼠标轻微推动光带（parallax + mouseInfluence，已调弱）。
  *  - prefers-reduced-motion / 触屏设备：不启用；WebGL 不可用：静默跳过。
  *  - 内部分辨率封顶 1280，保证性能（用户此前反馈过加载偏慢）。
+ *  - 2026-08-10 追加：按设备性能分级降级（分辨率 / 帧率 / 后台暂停），
+ *    低配设备（核显或软件渲染）上这是最大的持续 GPU 开销来源。
  *
  * 两页共用。
  */
@@ -19,6 +21,20 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
   if (reduce || !fine) return; // 减少动效 / 触屏：不启用
+
+  // 性能分级：与 water-bg.js 同一套判定逻辑
+  var TIER = (function () {
+    var cores = navigator.hardwareConcurrency || 4;
+    var mem = navigator.deviceMemory || 4;
+    var px = window.innerWidth * (window.devicePixelRatio || 1);
+    if (cores <= 4 || mem <= 4) return 'low';
+    if (cores <= 8 || mem <= 8 || px > 2600) return 'mid';
+    return 'high';
+  })();
+  // 内部分辨率上限：low 档砍到 720（像素量约为 1280 的 1/3），这是最直接的减负手段
+  var MAX_DIM = TIER === 'low' ? 720 : (TIER === 'mid' ? 1024 : 1280);
+  var DPR_CAP = TIER === 'low' ? 1 : (TIER === 'mid' ? 1.25 : 1.5);
+  var MIN_DT = TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60);
 
   var canvas = document.createElement('canvas');
   canvas.id = 'color-bends';
@@ -273,8 +289,8 @@
 
   function resize() {
     var w = window.innerWidth || 1, h = window.innerHeight || 1;
-    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    var maxDim = 1280; // 内部分辨率封顶，保证性能
+    var dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+    var maxDim = MAX_DIM; // 内部分辨率封顶，保证性能
     var bw = Math.floor(w * dpr), bh = Math.floor(h * dpr);
     var scaleDown = Math.min(1, maxDim / Math.max(bw, bh));
     bw = Math.max(1, Math.floor(bw * scaleDown));
@@ -289,7 +305,13 @@
   window.addEventListener('resize', resize);
 
   var start = performance.now();
+  var rafId = 0, lastT = 0, running = false;
+
   function render(now) {
+    rafId = requestAnimationFrame(render);
+    if (now - lastT < MIN_DT) return;   // 按档位限帧，低配设备不再跑满 60fps
+    lastT = now;
+
     var elapsed = (now - start) / 1000;
     gl.uniform1f(u.uTime, elapsed);
 
@@ -302,7 +324,30 @@
     gl.uniform2f(u.uPointer, curX, curY);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
   }
-  requestAnimationFrame(render);
+
+  function startLoop() {
+    if (running) return;
+    running = true;
+    lastT = 0;
+    rafId = requestAnimationFrame(render);
+  }
+  function stopLoop() {
+    running = false;
+    cancelAnimationFrame(rafId);
+  }
+  // 切到后台 / 最小化时彻底停掉，释放 GPU
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stopLoop(); else startLoop();
+  });
+
+  // 与 water-bg.js 联动：实测帧率过低时同步降分辨率 + 限帧
+  window.addEventListener('yc:perf-downgrade', function () {
+    MAX_DIM = 720;
+    DPR_CAP = 1;
+    MIN_DT = 1000 / 30;
+    resize();
+  });
+
+  startLoop();
 })();

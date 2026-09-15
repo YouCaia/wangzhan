@@ -1198,6 +1198,7 @@
       img.src = src;
       img.alt = alt || '';
       img.loading = 'lazy';
+      img.decoding = 'async';   // 解码不阻塞主线程，滚动更顺
       img.onerror = function() { img.style.display = 'none'; };
       return img;
     }
@@ -1222,6 +1223,7 @@
         el.src = src;
         el.alt = alt || '';
         el.loading = 'lazy';
+        el.decoding = 'async';
         if (opts.objectFit) el.style.objectFit = opts.objectFit;
       }
       el.onerror = function() { el.style.display = 'none'; };
