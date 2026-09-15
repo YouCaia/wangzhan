@@ -138,120 +138,84 @@
     .bokeh-orb {
       position: absolute;
       border-radius: 50%;
-      /* 说明：原先这里用 filter: blur(80px) 来柔化边缘，但实测在无 GPU / 软件渲染
-         环境下，6 个大尺寸 blur 会让首页从 60fps 掉到 15fps（即使静止不动也一样）。
-         而 radial-gradient 本身就没有硬边，改用「多段柔和渐变」可达到几乎相同的
-         光晕观感，且完全不经过滤镜通道 —— 60fps 满帧。 */
+      filter: blur(80px);
       opacity: 0.5;
       will-change: transform;
     }
     .orb-1 {
       width: 500px; height: 500px;
-      background: radial-gradient(circle,
-          rgba(232,184,100,.80) 0%,
-          rgba(216,158,74,.50) 24%,
-          rgba(201,138,59,.24) 46%,
-          rgba(201,138,59,.08) 66%,
-          rgba(201,138,59,0) 84%);
+      background: radial-gradient(circle, #e8b864 0%, #c98a3b 40%, transparent 70%);
       top: -120px; left: -100px;
       animation: float1 18s ease-in-out infinite;
     }
     .orb-2 {
       width: 600px; height: 600px;
-      background: radial-gradient(circle,
-          rgba(212,168,87,.78) 0%,
-          rgba(190,146,68,.48) 26%,
-          rgba(168,130,58,.23) 48%,
-          rgba(168,130,58,.08) 68%,
-          rgba(168,130,58,0) 85%);
+      background: radial-gradient(circle, #d4a857 0%, #a8823a 45%, transparent 70%);
       bottom: -180px; right: -150px;
       animation: float2 22s ease-in-out infinite;
     }
     .orb-3 {
       width: 350px; height: 350px;
-      background: radial-gradient(circle,
-          rgba(240,208,137,.75) 0%,
-          rgba(224,186,110,.46) 26%,
-          rgba(212,168,87,.22) 48%,
-          rgba(212,168,87,.07) 68%,
-          rgba(212,168,87,0) 85%);
+      background: radial-gradient(circle, #f0d089 0%, #d4a857 35%, transparent 65%);
       top: 30%; right: 20%;
       animation: float3 16s ease-in-out infinite;
       opacity: 0.35;
     }
     .orb-4 {
       width: 280px; height: 280px;
-      background: radial-gradient(circle,
-          rgba(232,184,100,.78) 0%,
-          rgba(214,158,74,.48) 26%,
-          rgba(201,138,59,.22) 48%,
-          rgba(201,138,59,.07) 68%,
-          rgba(201,138,59,0) 85%);
+      background: radial-gradient(circle, #e8b864 0%, #c98a3b 40%, transparent 70%);
       bottom: 25%; left: 15%;
       animation: float4 20s ease-in-out infinite;
       opacity: 0.4;
     }
     .orb-5 {
       width: 200px; height: 200px;
-      background: radial-gradient(circle,
-          rgba(245,220,160,.72) 0%,
-          rgba(236,199,127,.44) 28%,
-          rgba(232,184,100,.20) 50%,
-          rgba(232,184,100,.06) 70%,
-          rgba(232,184,100,0) 86%);
+      background: radial-gradient(circle, #f5dca0 0%, #e8b864 50%, transparent 75%);
       top: 15%; left: 45%;
       animation: float5 14s ease-in-out infinite;
       opacity: 0.3;
     }
     .orb-6 {
       width: 420px; height: 420px;
-      background: radial-gradient(circle,
-          rgba(201,138,59,.76) 0%,
-          rgba(176,116,50,.46) 26%,
-          rgba(139,94,42,.22) 48%,
-          rgba(139,94,42,.07) 68%,
-          rgba(139,94,42,0) 85%);
+      background: radial-gradient(circle, #c98a3b 0%, #8b5e2a 40%, transparent 70%);
       bottom: -80px; left: 35%;
       animation: float6 24s ease-in-out infinite;
       opacity: 0.35;
     }
 
-    /* 性能兜底（配合 perf-guard.js 的 yc-soft / yc-fx-off 类）。
-       光斑漂浮动画已改为纯 translate（去掉 scale 后不再触发重新光栅化），
-       实测开销在噪声范围内，因此降级时也保留漂浮；只处理昂贵的 .work-thumb-glow 模糊。 */
-    html.yc-soft .work-thumb-glow { filter: none !important; opacity: 0.35 !important; }
+    /* 兜底（配合 perf-guard.js）：仅在实测帧率真的很低（<25fps）时才停用光斑，
+       正常情况下完全不介入，保持原始观感。 */
+    html.yc-soft .bokeh-orb { animation: none !important; }
+    html.yc-soft .work-thumb-glow { filter: none !important; }
     html.yc-fx-off .bokeh-orb { display: none !important; }
 
-    /* 只做位移、不做缩放：scale() 会让浏览器每帧重新光栅化这 6 个大尺寸
-       径向渐变（实测约占 15fps），而纯 translate 只走合成器、几乎免费。
-       位移幅度相应加大，漂浮感依然保留。 */
     @keyframes float1 {
-      0%, 100% { transform: translate(0, 0); }
-      33%      { transform: translate(72px, 48px); }
-      66%      { transform: translate(-38px, 92px); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(60px, 40px) scale(1.08); }
+      66%      { transform: translate(-30px, 80px) scale(0.95); }
     }
     @keyframes float2 {
-      0%, 100% { transform: translate(0, 0); }
-      33%      { transform: translate(-94px, -58px); }
-      66%      { transform: translate(48px, -104px); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(-80px, -50px) scale(1.1); }
+      66%      { transform: translate(40px, -90px) scale(0.92); }
     }
     @keyframes float3 {
-      0%, 100% { transform: translate(0, 0); }
-      50%      { transform: translate(-84px, 72px); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(-70px, 60px) scale(1.15); }
     }
     @keyframes float4 {
-      0%, 100% { transform: translate(0, 0); }
-      50%      { transform: translate(96px, -60px); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(80px, -50px) scale(1.1); }
     }
     @keyframes float5 {
-      0%, 100% { transform: translate(0, 0); }
-      25%      { transform: translate(52px, 38px); }
-      75%      { transform: translate(-40px, -52px); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25%      { transform: translate(40px, 30px) scale(1.2); }
+      75%      { transform: translate(-30px, -40px) scale(0.9); }
     }
     @keyframes float6 {
-      0%, 100% { transform: translate(0, 0); }
-      40%      { transform: translate(60px, -72px); }
-      80%      { transform: translate(-76px, 38px); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      40%      { transform: translate(50px, -60px) scale(1.05); }
+      80%      { transform: translate(-60px, 30px) scale(0.98); }
     }
 
     /* Noise */

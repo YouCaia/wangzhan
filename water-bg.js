@@ -37,11 +37,11 @@
     TIER = FX.tier;
     if (!FX.water) return;                              // 守卫判定不启用（软件渲染 / ?fx=off）
   }
-  var DPR_CAP = FX && FX.noGpu ? 1 : (TIER === 'low' ? 1 : (TIER === 'mid' ? 1.5 : 2));
-  var MIN_DT = FX ? (1000 / FX.waterFps) : (TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60));
-  // 输出缩放：无 GPU 时按 55% 渲染再用 CSS 拉伸铺满。
-  // 水波本身是柔和模糊的，缩放后肉眼分辨不出，但填充像素量降到约 1/3。
-  var OUT_SCALE = FX && FX.noGpu ? 0.55 : 1;
+  // 全部恢复原始设定（dpr 上限 2 / 60fps / 输出 100%）—— 卡顿根因是服务器响应慢，
+  // 不再为性能牺牲画质。仅在 perf-guard 实测帧率极低时才由降级事件调低。
+  var DPR_CAP = 2;
+  var MIN_DT = 1000 / 60;
+  var OUT_SCALE = 1;
 
   var body = document.body || document.documentElement;
 
@@ -364,10 +364,8 @@
     if (LENS_ON && lens) { LENS_ON = false; lens.style.display = 'none'; }
   }
   window.addEventListener('yc:fx-hibernate', enterHibernate);
-
-  // 软件渲染（远程桌面 / 无显卡）下直接进休眠：
-  // 静止时完全不重绘（零开销），指针移动时照常起涟漪 —— 交互保留，持续开销归零
-  if (FX && FX.noGpu) enterHibernate();
+  // 注：不再因「无 GPU」自动休眠 —— 实测卡顿是服务器响应慢导致，
+  // 自动休眠会让水波在静止时完全不动，破坏观感。仅在实测帧率极低时才由事件触发。
 
   if (!FX && TIER !== 'low') {
     (function watchFps() {

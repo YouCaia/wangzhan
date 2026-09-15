@@ -73,23 +73,22 @@
     forced: forced,
     cores: cores,
     mem: mem,
-    // 特效一律保留（用户明确要求不能为了流畅牺牲观感）。
-    // 软件渲染下靠「降低变化频率」而不是「删除特效」来换性能：
-    //   - 光带本身变化极慢（speed 0.2），10fps 与 60fps 肉眼几乎无差，成本仅 1/6
-    //   - 水波进休眠，静止时零重绘
-    //   - 背景变化慢了，十几层 backdrop-filter 的重算频率也随之下降
+    // 全部特效、全部画质参数一律保持原始设定。
+    // 依据：实测卡顿根因是「服务器响应慢」（GitHub Pages 首字节 0.46~4.85s，
+    // 而 B 站仅 0.06s），不是渲染性能。因此不再基于硬件猜测做任何预先降级，
+    // 只在下方看门狗「实测帧率真的很低」时才介入。
     water: forced !== null ? forced : baseOn,
     bends: forced !== null ? forced : baseOn,
-    lens: forced !== null ? forced : (baseOn && tier !== 'low' && !noGpu),
-    waterFps: noGpu ? 24 : (tier === 'low' ? 30 : (tier === 'mid' ? 45 : 60)),
-    bendsFps: noGpu ? 10 : (tier === 'low' ? 20 : (tier === 'mid' ? 30 : 60)),
+    lens: forced !== null ? forced : baseOn,
+    waterFps: 60,
+    bendsFps: 60,
     killed: false
   };
 
   function emit(name) { try { window.dispatchEvent(new CustomEvent(name)); } catch (e) {} }
 
-  // 一档降级：优先砍掉最贵的 backdrop-filter 毛玻璃（实测单项约 15fps），
-  // 而光带继续以低帧率流动 —— 保住背景氛围与亮度，这是观感优先级最高的部分。
+  // 一档降级（仅 <25fps 才触发）：先砍最贵的 backdrop-filter 毛玻璃（约 15fps），
+  // 光带仍以原分辨率流动，画面亮度与氛围不变。
   FX.degrade = function () {
     if (FX.killed) return;
     docEl.classList.add('yc-soft');
@@ -161,9 +160,9 @@
       if (el < 2000) return;
       var fps = frames / (el / 1000);
       frames = 0; t0 = t;
-      // 两档用不同阈值：一档 38fps 触发，二档要真的到 30fps 以下才继续降，
-      // 避免在临界值反复横跳导致一降到底、把光带也冻掉。
-      var low = fps < (phase === 0 ? 38 : 30);
+      // 阈值设得很保守：只有真的卡到 25fps 以下才介入，二档要 18fps 以下。
+      // 目的是完全不影响正常观感 —— 兼容老旧设备时的最后保险，而非常规行为。
+      var low = fps < (phase === 0 ? 25 : 18);
       if (low) lowCount++; else lowCount = 0;
       if (lowCount >= 2 && phase === 0) { phase = 1; lowCount = 0; FX.degrade(); }
       else if (lowCount >= 3 && phase === 1) { phase = 2; FX.hibernate(); }

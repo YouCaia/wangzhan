@@ -35,13 +35,11 @@
     if (cores <= 8 || mem <= 8 || px > 2600) return 'mid';
     return 'high';
   })();
-  // 内部分辨率上限：光带是极度模糊的渐变，低分辨率再用 CSS 拉伸铺满肉眼无损，
-  // 因此软件渲染（无 GPU）下可以大胆砍到 420，像素量只有 1280 的约 1/9。
-  var MAX_DIM = (FX && FX.noGpu) ? 420 : (TIER === 'low' ? 720 : (TIER === 'mid' ? 1024 : 1280));
-  var DPR_CAP = TIER === 'low' ? 1 : (TIER === 'mid' ? 1.25 : 1.5);
-  // 光带本身流动极慢（cfg.speed = 0.2），10fps 与 60fps 观感几乎一致，
-  // 但渲染开销只有 1/6 —— 用降帧而不是关停来换取低配设备的流畅度。
-  var MIN_DT = FX ? (1000 / FX.bendsFps) : (TIER === 'low' ? 1000 / 30 : (TIER === 'mid' ? 1000 / 45 : 1000 / 60));
+  // 内部分辨率上限：1280（原始设定，保证画质）—— 卡顿根因是服务器响应慢而非渲染，
+  // 不再为性能牺牲分辨率。仅在 perf-guard 实测帧率极低（yc:perf-downgrade）时才降。
+  var MAX_DIM = 1280;
+  var DPR_CAP = 1.5;
+  var MIN_DT = 1000 / 60;
 
   var canvas = document.createElement('canvas');
   canvas.id = 'color-bends';
